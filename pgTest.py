@@ -1,6 +1,6 @@
+#pgTest.py
 import sys
 import psycopg2 as pg
-import monetdb.sql as mdb
 import random
 import math
 from time import clock
@@ -17,11 +17,6 @@ sizeChunk = maxRows/numChunks
 lng = False #unnecessary?
 if(maxRows > 32):
 	lng = True
-
-def decToBinTrans(dec):
-
-	print(int(bin(dec)[2:]))
-
 
 def binToRecTrans(bin):
 
@@ -49,44 +44,43 @@ def recToBinTrans(col, chunk):
 	print(col, chunk, colBin + bin(chunk)[2:])
 	return colBin + bin(chunk)[2:]
 
-def createDCTable(cur, conn, table, typ):
+def createDCTable(cur, conn, table):
 
-	createTable(cur, conn, 'dc_' + table, 6)
+	createTable(cur, conn, 'dc_' + table, 6, 1)
 	'''
 	-Get data chunk by chunk (see if you can get data row by row or rows by rows)
 	-Calc stats for the chunks
-	-input stats into DC table with bin representation and stuff 
+	-input stats into DC table with bin representation and stuff
 	'''
-	if(typ == "pg"):
-		cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
-		colList = [x[0] for x in cur.fetchall()]
-	else:
-		cur.execute("SELECT * FROM " + table)
-		colList = [x[0] for x in  cur.description]
+	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
+	colList = [x[0] for x in cur.fetchall()]
 
-	#works for one level of POSTGRES (I think) - idk how to do more levels yet
+	#works for one level of POSTGRES (I think) - nested for loops for each extra level??
 	for i in range(1, len(colList)):
-		for x in range(numChunks):
-			cur.execute("SELECT AVG(ss) FROM (SELECT " 
-				+ colList[i] + " AS ss FROM " 
-				+ table + " LIMIT " + str(math.ceil(sizeChunk)) 
-				+ " OFFSET " + str(x*sizeChunk) + ") as foo")
-			avg = int(cur.fetchone()[0])
-			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", [int(recToBinTrans([i], x), 2), avg, 0,0,0,0])
+		for j in range(1, len(colList)):
+			for x in range(numChunks):
+				cur.execute("SELECT AVG(ss) FROM (SELECT " 
+					+ colList[i] + " AS ss FROM " 
+					+ table + " LIMIT " + str(math.ceil(sizeChunk)) 
+					+ " OFFSET " + str(x*sizeChunk) + ") as foo")
+				avg = int(cur.fetchone()[0])
+				cur.execute("SELECT STDDEV(ss) FROM (SELECT " 
+					+ colList[i] + " AS ss FROM "
+					+ table + " LIMIT " + str(math.ceil(sizeChunk)) 
+					+ " OFFSET " + str(x*sizeChunk) + ") as foo")
+				stddev = int(cur.fetchone()[0])
+				cur.execute("SELECT VAR(ss) FROM (SELECT " 
+					+ colList[i] + " AS ss FROM " 
+					+ table + " LIMIT " + str(math.ceil(sizeChunk)) 
+					+ " OFFSET " + str(x*sizeChunk) + ") as foo")
+				var = int(cur.fetchone()[0])
+
+				cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", [recToBinTrans([j], x), avg, stddev,var,0,0])
 
 	print("reached")
-	#cur.execute("SELECT banana FROM test LIMIT " + str(math.ceil(sizeChunk)) + "OFFSET 2")
 
 	getAllData(cur, conn, "dc_" + table)
 	print(cur.fetchall())
-
-	#cur.execute("SELECT AVG(ss) as avg FROM (SELECT banana as ss FROM " + table + " LIMIT " + str(math.ceil(sizeChunk)) + " OFFSET 2) as foo")
-
-	#cur.execute("SELECT * FROM (SELECT banana FROM test WHERE ROW_NUMBER() OVER() < 3) as foo")
-
-
-	print(cur.fetchall())
-
 
 def createTable(cur, conn, name, numCol, b=0):
 
@@ -120,14 +114,10 @@ def graphData(cur, conn, table, col):
 
 def alterTable(cur, conn):
 	return
-def insertRandData(cur, conn, table, length, typ):
+def insertRandData(cur, conn, table, length):
 
-	if(typ == "pg"):
-		cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
-		colList = [x[0] for x in cur.fetchall()]
-	else:
-		cur.execute("SELECT * FROM " + table)
-		colList = [x[0] for x in  cur.description]
+	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
+	colList = [x[0] for x in cur.fetchall()]
 
 	for x in range(int(length)):
 		exe = "INSERT INTO " + table + " ("
@@ -153,31 +143,25 @@ def getAllData(cur, conn, table):
 
 def main():
 
-	if(sys.argv[1] == "pg"):
 
-		conn = pg.connect(dbname="postgres")
-		cur = conn.cursor()
+	conn = pg.connect(dbname="postgres")
+	cur = conn.cursor()
 
-	elif(sys.argv[1] == "mdb"):
-
-		conn = mdb.connect(username="monetdb", password="monetdb", database="test")
-		cur = conn.cursor()
-
-	if(sys.argv[2] == "get"):
-		getAllData(cur, conn, sys.argv[3])
-	elif(sys.argv[2] == "insert"):
-		insertRandData(cur, conn, sys.argv[3], sys.argv[4], sys.argv[1])
-	elif(sys.argv[2] == "graph"):
-		graphData(cur, conn, sys.argv[3], sys.argv[4])
-	elif(sys.argv[2] == "create"):
-		createTable(cur, conn, sys.argv[3], sys.argv[4])
+	if(sys.argv[1] == "get"):
+		getAllData(cur, conn, sys.argv[2])
+	elif(sys.argv[1] == "insert"):
+		insertRandData(cur, conn, sys.argv[2], sys.argv[3])
+	elif(sys.argv[1] == "graph"):
+		graphData(cur, conn, sys.argv[2], sys.argv[3])
+	elif(sys.argv[1] == "create"):
+		createTable(cur, conn, sys.argv[2], sys.argv[3])
 
 
-	createTable(cur, conn, "banana", numCols + 1, 1)
+	#createTable(cur, conn, "banana", numCols + 1, 1)
 	#createTable(cur, conn, "test", numCols + 1)
-	#insertRandData(cur, conn, "test", maxRows, "pg")
+	#insertRandData(cur, conn, "test", maxRows)
 	#getAllData(cur, conn, "dc_test")
-	#createDCTable(cur, conn, sys.argv[3], sys.argv[1])
+	createDCTable(cur, conn, sys.argv[3])
 
 	conn.commit()
 	cur.close()

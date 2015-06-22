@@ -1,5 +1,5 @@
+#mdbTest.py
 import sys
-import psycopg2 as pg
 import monetdb.sql as mdb
 import random
 import math
@@ -49,7 +49,7 @@ def recToBinTrans(col, chunk):
 	print(col, chunk, colBin + bin(chunk)[2:])
 	return colBin + bin(chunk)[2:]
 
-def createDCTable(cur, conn, table, typ):
+def createDCTable(cur, conn, table):
 
 	createTable(cur, conn, 'dc_' + table, 6)
 	'''
@@ -57,12 +57,9 @@ def createDCTable(cur, conn, table, typ):
 	-Calc stats for the chunks
 	-input stats into DC table with bin representation and stuff 
 	'''
-	if(typ == "pg"):
-		cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
-		colList = [x[0] for x in cur.fetchall()]
-	else:
-		cur.execute("SELECT * FROM " + table)
-		colList = [x[0] for x in  cur.description]
+
+	cur.execute("SELECT * FROM " + table)
+	colList = [x[0] for x in  cur.description]
 
 	#works for one level of POSTGRES (I think) - idk how to do more levels yet
 	for i in range(1, len(colList)):
@@ -120,14 +117,10 @@ def graphData(cur, conn, table, col):
 
 def alterTable(cur, conn):
 	return
-def insertRandData(cur, conn, table, length, typ):
+def insertRandData(cur, conn, table, length):
 
-	if(typ == "pg"):
-		cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
-		colList = [x[0] for x in cur.fetchall()]
-	else:
-		cur.execute("SELECT * FROM " + table)
-		colList = [x[0] for x in  cur.description]
+	cur.execute("SELECT * FROM " + table)
+	colList = [x[0] for x in  cur.description]
 
 	for x in range(int(length)):
 		exe = "INSERT INTO " + table + " ("
@@ -153,20 +146,13 @@ def getAllData(cur, conn, table):
 
 def main():
 
-	if(sys.argv[1] == "pg"):
-
-		conn = pg.connect(dbname="postgres")
-		cur = conn.cursor()
-
-	elif(sys.argv[1] == "mdb"):
-
-		conn = mdb.connect(username="monetdb", password="monetdb", database="test")
-		cur = conn.cursor()
+	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
+	cur = conn.cursor()
 
 	if(sys.argv[2] == "get"):
 		getAllData(cur, conn, sys.argv[3])
 	elif(sys.argv[2] == "insert"):
-		insertRandData(cur, conn, sys.argv[3], sys.argv[4], sys.argv[1])
+		insertRandData(cur, conn, sys.argv[3], sys.argv[4])
 	elif(sys.argv[2] == "graph"):
 		graphData(cur, conn, sys.argv[3], sys.argv[4])
 	elif(sys.argv[2] == "create"):
@@ -175,9 +161,9 @@ def main():
 
 	createTable(cur, conn, "banana", numCols + 1, 1)
 	#createTable(cur, conn, "test", numCols + 1)
-	#insertRandData(cur, conn, "test", maxRows, "pg")
+	#insertRandData(cur, conn, "test", maxRows)
 	#getAllData(cur, conn, "dc_test")
-	#createDCTable(cur, conn, sys.argv[3], sys.argv[1])
+	#createDCTable(cur, conn, sys.argv[3])
 
 	conn.commit()
 	cur.close()
