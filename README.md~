@@ -1,6 +1,5 @@
 # DataCanopySQL
 
-> * Still debugging
 > * Still working on refactoring the MonetDB part - currently runs with a workaround
 > * Still working on graph method
 > * Still working on building a single script to run all of it
