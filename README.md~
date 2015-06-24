@@ -32,5 +32,5 @@
      * Assumes first column is used for identification
      * Use `createdc YOUR_TABLE_NAME`
 
-Dhruv Gupta - [daslab.seas.harvard.edu]
+Dhruv Gupta - (daslab.seas.harvard.edu)
      
