@@ -56,7 +56,8 @@ def createDCTable(cur, conn, table):
 	colList = [x[0] for x in cur.fetchall()]
 
 	#works for one level of POSTGRES (I think) - nested for loops for each extra level??
-	for i in range(1, len(colList)):
+	#for i in range(1, len(colList)): #for multiple levels?
+	for i in range(1, 1):
 		for j in range(1, len(colList)):
 			for x in range(numChunks):
 				cur.execute("SELECT AVG(ss) FROM (SELECT " 
@@ -75,7 +76,12 @@ def createDCTable(cur, conn, table):
 					+ " OFFSET " + str(x*sizeChunk) + ") as foo")
 				var = int(cur.fetchone()[0])
 
-				cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", [recToBinTrans([j], x), avg, stddev,var,0,0])
+				med = 0 #median????
+
+				cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[j] + " ORDER BY COUNT( ) DESC")
+				mod = int(cur.fetchone()[0])
+
+				cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", [recToBinTrans([j], x), avg, stddev,var,med,mod])
 
 	print("reached")
 
