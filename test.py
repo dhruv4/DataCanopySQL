@@ -32,9 +32,4 @@ def main():
 	conn.close()
 	print("Run time: ", clock() - startTime, " seconds")
 
-def test():
-
-	print(decToBinTrans(3))
-
 if __name__=="__main__": startTime = clock(); main()
-#if __name__=="__main__": startTime = clock(); test()
