@@ -12,7 +12,7 @@ numChunks = 5
 numCols = 5
 #maxRows = math.ceil(numCols + math.log(numChunks, 2))
 maxRows = (2**numCols - 1)*numChunks
-sizeChunk = maxRows/numChunks
+sizeChunk = math.ceil(maxRows/numChunks)
 
 lng = False #unnecessary?
 if(maxRows > 32):
@@ -61,17 +61,17 @@ def createDCTable(cur, conn, table):
 			for x in range(numChunks):
 				cur.execute("SELECT AVG(ss) FROM (SELECT " 
 					+ colList[i] + " AS ss FROM " 
-					+ table + " LIMIT " + str(math.ceil(sizeChunk)) 
+					+ table + " LIMIT " + str(sizeChunk) 
 					+ " OFFSET " + str(x*sizeChunk) + ") as foo")
 				avg = int(cur.fetchone()[0])
 				cur.execute("SELECT STDDEV(ss) FROM (SELECT " 
 					+ colList[i] + " AS ss FROM "
-					+ table + " LIMIT " + str(math.ceil(sizeChunk)) 
+					+ table + " LIMIT " + str(sizeChunk) 
 					+ " OFFSET " + str(x*sizeChunk) + ") as foo")
 				stddev = int(cur.fetchone()[0])
 				cur.execute("SELECT VAR(ss) FROM (SELECT " 
 					+ colList[i] + " AS ss FROM " 
-					+ table + " LIMIT " + str(math.ceil(sizeChunk)) 
+					+ table + " LIMIT " + str(sizeChunk) 
 					+ " OFFSET " + str(x*sizeChunk) + ") as foo")
 				var = int(cur.fetchone()[0])
 

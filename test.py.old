@@ -1,5 +1,5 @@
-#mdbTest.py
 import sys
+import psycopg2 as pg
 import monetdb.sql as mdb
 import random
 import math
@@ -10,10 +10,9 @@ import Gnuplot, Gnuplot.funcutils
 #DC INFO
 numChunks = 5
 numCols = 5
-binLen = math.ceil(numCols + math.log(numChunks, 2))
+#maxRows = math.ceil(numCols + math.log(numChunks, 2))
 maxRows = (2**numCols - 1)*numChunks
-sizeChunk = math.ceil(maxRows/numChunks)
-chunkBinLen = math.ceil(math.log(numChunks, 2))
+sizeChunk = maxRows/numChunks
 
 lng = False #unnecessary?
 if(maxRows > 32):
@@ -21,11 +20,7 @@ if(maxRows > 32):
 
 def decToBinTrans(dec):
 
-	binCode = bin(dec)[2:]
-	if(len(binCode) < binLen):
-		lbc = len(binCode)
-		for x in range(binLen - lbc):
-			binCode = "0" + binCode
+	print(int(bin(dec)[2:]))
 
 
 def binToRecTrans(bin):
@@ -51,16 +46,10 @@ def recToBinTrans(col, chunk):
 		else:
 			colBin += '0'
 
-	chunkBin = bin(chunk)[2:]
-	if(len(chunkBin) < chunkBinLen):
-		lcb = len(chunkBin)
-		for x in range(chunkBinLen - lcb):
-			chunkBin = "0" + chunkBin
+	print(col, chunk, colBin + bin(chunk)[2:])
+	return colBin + bin(chunk)[2:]
 
-	print(col, chunk, colBin + chunkBin)
-	return colBin + chunkBin
-
-def createDCTable(cur, conn, table):
+def createDCTable(cur, conn, table, typ):
 
 	createTable(cur, conn, 'dc_' + table, 6)
 	'''
@@ -68,32 +57,48 @@ def createDCTable(cur, conn, table):
 	-Calc stats for the chunks
 	-input stats into DC table with bin representation and stuff 
 	'''
-
-	cur.execute("SELECT * FROM " + table)
-	colList = [x[0] for x in  cur.description]
+	if(typ == "pg"):
+		cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
+		colList = [x[0] for x in cur.fetchall()]
+	else:
+		cur.execute("SELECT * FROM " + table)
+		colList = [x[0] for x in  cur.description]
 
 	#works for one level of POSTGRES (I think) - idk how to do more levels yet
 	for i in range(1, len(colList)):
 		for x in range(numChunks):
-
-			#cur.execute("CREATE FUNCTION GET_CHUNK(lim INT, off INT, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm integer)"
-			#	+" RETURN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
-			##^^This is the statement that SHOULD work but doesn't because monetdb doesn't recognize the variables like "col", "lim"
-	
-			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (clm integer) "
-				+"BEGIN RETURN SELECT " + colList[i] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
-			cur.execute("SELECT AVG(clm) FROM GET_CHUNK()")
+			cur.execute("SELECT AVG(ss) FROM (SELECT " 
+				+ colList[i] + " AS ss FROM " 
+				+ table + " LIMIT " + str(math.ceil(sizeChunk)) 
+				+ " OFFSET " + str(x*sizeChunk) + ") as foo")
 			avg = int(cur.fetchone()[0])
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", [int(recToBinTrans([i], x), 2), avg, 0,0,0,0])
-			cur.execute("DROP FUNCTION GET_CHUNK()")
+
+	print("reached")
+	#cur.execute("SELECT banana FROM test LIMIT " + str(math.ceil(sizeChunk)) + "OFFSET 2")
 
 	getAllData(cur, conn, "dc_" + table)
+	print(cur.fetchall())
 
-def createTable(cur, conn, name, numCol):
+	#cur.execute("SELECT AVG(ss) as avg FROM (SELECT banana as ss FROM " + table + " LIMIT " + str(math.ceil(sizeChunk)) + " OFFSET 2) as foo")
 
-	cols = "("
-	for x in range(numCol):
-		cols += "col" + str(x) + " int,"
+	#cur.execute("SELECT * FROM (SELECT banana FROM test WHERE ROW_NUMBER() OVER() < 3) as foo")
+
+
+	print(cur.fetchall())
+
+
+def createTable(cur, conn, name, numCol, b=0):
+
+	if(b == 1):
+		cols = "(col0 varbit,"
+		for x in range(1, numCol):
+			cols += "col" + str(x) + " int,"
+	else:
+		cols = "("
+		for x in range(numCol):
+			cols += "col" + str(x) + " int,"
+	
 
 	cols = cols[:-1]
 
@@ -115,10 +120,14 @@ def graphData(cur, conn, table, col):
 
 def alterTable(cur, conn):
 	return
-def insertRandData(cur, conn, table, length):
+def insertRandData(cur, conn, table, length, typ):
 
-	cur.execute("SELECT * FROM " + table)
-	colList = [x[0] for x in  cur.description]
+	if(typ == "pg"):
+		cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
+		colList = [x[0] for x in cur.fetchall()]
+	else:
+		cur.execute("SELECT * FROM " + table)
+		colList = [x[0] for x in  cur.description]
 
 	for x in range(int(length)):
 		exe = "INSERT INTO " + table + " ("
@@ -144,23 +153,31 @@ def getAllData(cur, conn, table):
 
 def main():
 
-	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
-	cur = conn.cursor()
+	if(sys.argv[1] == "pg"):
 
-	if(sys.argv[1] == "get"):
-		getAllData(cur, conn, sys.argv[2])
-	elif(sys.argv[1] == "insert"):
-		insertRandData(cur, conn, sys.argv[2], sys.argv[3])
-	elif(sys.argv[1] == "graph"):
-		graphData(cur, conn, sys.argv[2], sys.argv[3])
-	elif(sys.argv[1] == "create"):
-		createTable(cur, conn, sys.argv[2], sys.argv[3])
+		conn = pg.connect(dbname="postgres")
+		cur = conn.cursor()
+
+	elif(sys.argv[1] == "mdb"):
+
+		conn = mdb.connect(username="monetdb", password="monetdb", database="test")
+		cur = conn.cursor()
+
+	if(sys.argv[2] == "get"):
+		getAllData(cur, conn, sys.argv[3])
+	elif(sys.argv[2] == "insert"):
+		insertRandData(cur, conn, sys.argv[3], sys.argv[4], sys.argv[1])
+	elif(sys.argv[2] == "graph"):
+		graphData(cur, conn, sys.argv[3], sys.argv[4])
+	elif(sys.argv[2] == "create"):
+		createTable(cur, conn, sys.argv[3], sys.argv[4])
 
 
+	createTable(cur, conn, "banana", numCols + 1, 1)
 	#createTable(cur, conn, "test", numCols + 1)
-	#insertRandData(cur, conn, "test", maxRows)
-	createDCTable(cur, conn, sys.argv[2])
+	#insertRandData(cur, conn, "test", maxRows, "pg")
 	#getAllData(cur, conn, "dc_test")
+	#createDCTable(cur, conn, sys.argv[3], sys.argv[1])
 
 	conn.commit()
 	cur.close()
