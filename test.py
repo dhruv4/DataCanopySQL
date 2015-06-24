@@ -26,6 +26,8 @@ def main():
 		graphData(cur, conn, sys.argv[3], sys.argv[4])
 	elif(sys.argv[2] == "create"):
 		createTable(cur, conn, sys.argv[3], sys.argv[4])
+	elif(sys.argv[2] == "createdc"):
+		createDCTable(cur, conn, sys.argv[3])
 
 	conn.commit()
 	cur.close()

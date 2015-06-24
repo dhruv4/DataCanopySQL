@@ -155,13 +155,14 @@ def main():
 		graphData(cur, conn, sys.argv[2], sys.argv[3])
 	elif(sys.argv[1] == "create"):
 		createTable(cur, conn, sys.argv[2], sys.argv[3])
-
+	elif(sys.argv[2] == "createdc"):
+		createDCTable(cur, conn, sys.argv[3])
 
 	#createTable(cur, conn, "banana", numCols + 1, 1)
 	#createTable(cur, conn, "test", numCols + 1)
 	#insertRandData(cur, conn, "test", maxRows)
 	#getAllData(cur, conn, "dc_test")
-	createDCTable(cur, conn, sys.argv[3])
+	#createDCTable(cur, conn, sys.argv[3])
 
 	conn.commit()
 	cur.close()
