@@ -20,7 +20,7 @@
      * Assumes all columns in table are integers
      * Use `insert YOUR_TABLE_NAME NUMBER_OF_ROWS`
 * graphData(cursor, connection, tableName, column)
-     * > Work in Progress
+     * _Work in Progress_
      * Graphs data from specified column in specified table
      * Use `graph YOUR_TABLE_NAME YOUR_COLUMN_NAME`
 * createTable(cursor, connection, tableName, numberColumns)
@@ -31,4 +31,6 @@
      * Assumes all data is integers
      * Assumes first column is used for identification
      * Use `createdc YOUR_TABLE_NAME`
+
+Dhruv Gupta - [daslab.seas.harvard.edu]
      
