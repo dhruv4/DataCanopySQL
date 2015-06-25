@@ -1,8 +1,6 @@
 #mdbTest.py
-import sys
+import sys, random, math, itertools
 import monetdb.sql as mdb
-import random
-import math
 from time import clock
 from numpy import *
 import Gnuplot, Gnuplot.funcutils
@@ -19,6 +17,8 @@ lng = False #unnecessary?
 if(maxRows > 32):
 	lng = True
 
+################FIX ME
+
 def decToBinTrans(dec):
 
 	binCode = bin(dec)[2:]
@@ -27,6 +27,7 @@ def decToBinTrans(dec):
 		for x in range(binLen - lbc):
 			binCode = "0" + binCode
 
+###############FIX ME
 
 def binToRecTrans(bin):
 
@@ -38,6 +39,8 @@ def binToRecTrans(bin):
 	chunk = int(bin[numCols:], 2)
 
 	return col, chunk
+
+###############FIX ME
 
 def recToBinTrans(col, chunk):
 
@@ -60,9 +63,9 @@ def recToBinTrans(col, chunk):
 	print(col, chunk, colBin + chunkBin)
 	return colBin + chunkBin
 
-def createDCTable(cur, conn, table):
+def createDCTable(cur, conn, table, levels = numCols):
 
-	createTable(cur, conn, 'dc_' + table, 6)
+	createTable(cur, conn, 'dc_' + table, 6, 1)
 	'''
 	-Get data chunk by chunk (see if you can get data row by row or rows by rows)
 	-Calc stats for the chunks
@@ -72,7 +75,7 @@ def createDCTable(cur, conn, table):
 	cur.execute("SELECT * FROM " + table)
 	colList = [x[0] for x in  cur.description]
 
-	#works for one level of POSTGRES (I think) - idk how to do more levels yet
+	#level 1
 	for i in range(1, len(colList)):
 		for x in range(numChunks):
 
@@ -80,6 +83,8 @@ def createDCTable(cur, conn, table):
 			#	+" RETURN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
 			##^^This is the statement that SHOULD work but doesn't because monetdb doesn't recognize the variables like "col", "lim"
 	
+
+			#################CAN THIS BE REDUCED TO ONE SELECT STATEMENT FROM DATASET??????????
 			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (clm integer) "
 				+"BEGIN RETURN SELECT " + colList[i] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
 			cur.execute("SELECT AVG(clm) FROM GET_CHUNK()")
@@ -90,18 +95,52 @@ def createDCTable(cur, conn, table):
 			var = int(cur.fetchone()[0])
 			cur.execute("SELECT MEDIAN(clm) FROM GET_CHUNK()")
 			med = int(cur.fetchone()[0])
-			cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[i] + " ORDER BY COUNT( ) DESC")
-			mod = int(cur.fetchone()[0])
+			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[i] + " ORDER BY COUNT( ) DESC")
+			#mod = int(cur.fetchone()[0])
+			mod = 0
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", [int(recToBinTrans([i], x), 2), avg, std,var,med,mod])
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 
+	#level 2
+	for i, j in itertools.combinations(range(1, numCols+1), 2):
+		for c in range(numChunks):
+			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (cl1 integer, cl2 integer) "
+			+"BEGIN RETURN SELECT " + colList[i] + "," + colList[j] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
+			cur.execute("SELECT CORR(cl1, cl2) FROM GET_CHUNK()")
+			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", [int(recToBinTrans([i, j], c), 2),int(cur.fetchone()[0])])
+			cur.execute("DROP FUNCTION GET_CHUNK()")
+	conn.commit()
+
+	print("level 2 created!")
+
+	#3-n Levels
+	for i in range(3, levels+1):
+		for c in range(numChunks):
+			for j in itertools.combinations(range(1, numCols + 1), i):
+				vals = []
+				for k in itertools.combinations(range(1, i), i-1):
+					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0=" + str(int(recToBinTrans(k, c), 2)))
+					vals.append(cur.fetchone()[0])
+
+				correlation = sum(vals) + 42
+
+				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", [str(int(recToBinTrans(j, c), 2)), int(correlation)])
+
+			conn.commit()
+			print("reached")
+
 	getAllData(cur, conn, "dc_" + table)
 
-def createTable(cur, conn, name, numCol):
+def createTable(cur, conn, name, numCol, p=0):
 
-	cols = "("
-	for x in range(numCol):
-		cols += "col" + str(x) + " int,"
+	if(p == 1):
+		cols = "(col0 int PRIMARY KEY,"
+		for x in range(1, numCol):
+			cols += "col" + str(x) + " int,"
+	else:
+		cols = "("
+		for x in range(numCol):
+			cols += "col" + str(x) + " int,"
 
 	cols = cols[:-1]
 
@@ -163,12 +202,12 @@ def main():
 		graphData(cur, conn, sys.argv[2], sys.argv[3])
 	elif(sys.argv[1] == "create"):
 		createTable(cur, conn, sys.argv[2], sys.argv[3])
-	elif(sys.argv[2] == "createdc"):
-		createDCTable(cur, conn, sys.argv[3])
+	elif(sys.argv[1] == "createdc"):
+		createDCTable(cur, conn, sys.argv[2])
 
 	#createTable(cur, conn, "test", numCols + 1)
 	#insertRandData(cur, conn, "test", maxRows)
-	createDCTable(cur, conn, sys.argv[2])
+	#createDCTable(cur, conn, sys.argv[2])
 	#getAllData(cur, conn, "dc_test")
 
 	conn.commit()
@@ -177,6 +216,11 @@ def main():
 	print("Run time: ", clock() - startTime, " seconds")
 
 def test():
+
+	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
+	cur = conn.cursor()
+
+	conn.commit()
 
 	print(decToBinTrans(3))
 
