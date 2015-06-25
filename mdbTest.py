@@ -5,31 +5,16 @@ from time import clock
 from numpy import *
 import Gnuplot, Gnuplot.funcutils
 
-#DC INFO
-numChunks = 5
-numCols = 5
-binLen = math.ceil(numCols + math.log(numChunks, 2))
-maxRows = (2**numCols - 1)*numChunks
-sizeChunk = math.ceil(maxRows/numChunks)
-chunkBinLen = math.ceil(math.log(numChunks, 2))
-
-lng = False #unnecessary?
-if(maxRows > 32):
-	lng = True
-
-################FIX ME
-
-def decToBinTrans(dec):
-
+def decToBinTrans(dec, numCols, numChunks):
+	
+	binLen = math.ceil(numCols + math.log(numChunks, 2))
 	binCode = bin(dec)[2:]
 	if(len(binCode) < binLen):
 		lbc = len(binCode)
 		for x in range(binLen - lbc):
 			binCode = "0" + binCode
 
-###############FIX ME
-
-def binToRecTrans(bin):
+def binToRecTrans(bin, numCols):
 
 	#input binary representation, return list of columns, chunk
 
@@ -40,9 +25,9 @@ def binToRecTrans(bin):
 
 	return col, chunk
 
-###############FIX ME
-
-def recToBinTrans(col, chunk):
+def recToBinTrans(col, chunk, numCols, numChunks):
+	
+	chunkBinLen = math.ceil(math.log(numChunks, 2))
 
 	#input list of columns relevant, chunk number
 
@@ -63,9 +48,11 @@ def recToBinTrans(col, chunk):
 	print(col, chunk, colBin + chunkBin)
 	return colBin + chunkBin
 
-def createDCTable(cur, conn, table, levels = numCols):
+def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
 	createTable(cur, conn, 'dc_' + table, 6, 1)
+	maxRows = (2**numCols - 1)*numChunks
+	sizeChunk = math.ceil(numRows/numChunks)
 	'''
 	-Get data chunk by chunk (see if you can get data row by row or rows by rows)
 	-Calc stats for the chunks
@@ -98,7 +85,8 @@ def createDCTable(cur, conn, table, levels = numCols):
 			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[i] + " ORDER BY COUNT( ) DESC")
 			#mod = int(cur.fetchone()[0])
 			mod = 0
-			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", [int(recToBinTrans([i], x), 2), avg, std,var,med,mod])
+			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", 
+				[int(recToBinTrans([i], x, numCols, numChunks), 2), avg, std,var,med,mod])
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 
 	#level 2
@@ -107,7 +95,8 @@ def createDCTable(cur, conn, table, levels = numCols):
 			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (cl1 integer, cl2 integer) "
 			+"BEGIN RETURN SELECT " + colList[i] + "," + colList[j] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
 			cur.execute("SELECT CORR(cl1, cl2) FROM GET_CHUNK()")
-			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", [int(recToBinTrans([i, j], c), 2),int(cur.fetchone()[0])])
+			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+				[int(recToBinTrans([i, j], c, numCols, numChunks), 2),int(cur.fetchone()[0])])
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 	conn.commit()
 
@@ -119,12 +108,14 @@ def createDCTable(cur, conn, table, levels = numCols):
 			for j in itertools.combinations(range(1, numCols + 1), i):
 				vals = []
 				for k in itertools.combinations(range(1, i), i-1):
-					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0=" + str(int(recToBinTrans(k, c), 2)))
+					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0=" 
+						+ str(int(recToBinTrans(k, c, numCols, numChunks), 2)))
 					vals.append(cur.fetchone()[0])
 
 				correlation = sum(vals) + 42
 
-				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", [str(int(recToBinTrans(j, c), 2)), int(correlation)])
+				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+					[str(int(recToBinTrans(j, c, numCols, numChunks), 2)), int(correlation)])
 
 			conn.commit()
 			print("reached")
@@ -191,6 +182,10 @@ def getAllData(cur, conn, table):
 
 def main():
 
+	#DC INFO
+	numChunks = 5
+	numCols = 5
+
 	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
 
@@ -203,26 +198,11 @@ def main():
 	elif(sys.argv[1] == "create"):
 		createTable(cur, conn, sys.argv[2], sys.argv[3])
 	elif(sys.argv[1] == "createdc"):
-		createDCTable(cur, conn, sys.argv[2])
-
-	#createTable(cur, conn, "test", numCols + 1)
-	#insertRandData(cur, conn, "test", maxRows)
-	#createDCTable(cur, conn, sys.argv[2])
-	#getAllData(cur, conn, "dc_test")
+		createDCTable(cur, conn, sys.argv[2], numCols, numChunks, numCols)
 
 	conn.commit()
 	cur.close()
 	conn.close()
 	print("Run time: ", clock() - startTime, " seconds")
 
-def test():
-
-	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
-	cur = conn.cursor()
-
-	conn.commit()
-
-	print(decToBinTrans(3))
-
 if __name__=="__main__": startTime = clock(); main()
-#if __name__=="__main__": startTime = clock(); test()

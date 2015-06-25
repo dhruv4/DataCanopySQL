@@ -5,21 +5,7 @@ from time import clock
 from numpy import *
 import Gnuplot, Gnuplot.funcutils
 
-#DC INFO
-numChunks = 5
-numCols = 5
-binLen = math.ceil(numCols + math.log(numChunks, 2))
-maxRows = (2**numCols - 1)*numChunks
-sizeChunk = math.ceil(maxRows/numChunks)
-chunkBinLen = math.ceil(math.log(numChunks, 2))
-
-lng = False #unnecessary?
-if(maxRows > 32):
-	lng = True
-
-#################FIX ME
-
-def binToRecTrans(bin):
+def binToRecTrans(bin, numCols):
 
 	#input binary representation, return list of columns, chunk
 
@@ -30,9 +16,11 @@ def binToRecTrans(bin):
 
 	return col, chunk
 
-def recToBinTrans(col, chunk):
+def recToBinTrans(col, chunk, numCols, numChunks):
 
 	#input list of columns relevant, chunk number
+	binLen = math.ceil(numCols + math.log(numChunks, 2))
+	chunkBinLen = math.ceil(math.log(numChunks, 2))
 
 	colBin = ""
 
@@ -51,8 +39,12 @@ def recToBinTrans(col, chunk):
 	print(col, chunk, colBin + chunkBin)
 	return colBin + chunkBin
 
-def createDCTable(cur, conn, table, levels = numCols, sizeChunk = sizeChunk, numChunks = numChunks, numCols = numCols):
-
+def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
+	
+	maxRows = (2**numCols - 1)*numChunks
+	#sizeChunk = math.ceil(numRows/numChunks)
+	sizeChunk = math.floor(numRows/numChunks)
+	
 	createTable(cur, conn, 'dc_' + table, 6, 1)
 	'''
 	-Get data chunk by chunk (see if you can get data row by row or rows by rows)
@@ -87,7 +79,8 @@ def createDCTable(cur, conn, table, levels = numCols, sizeChunk = sizeChunk, num
 			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[j] + " ORDER BY COUNT( ) DESC")
 			#mod = int(cur.fetchone()[0])
 			mod = 0
-			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", [recToBinTrans([j], x), avg, stddev,var,med,mod])
+			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
+				[recToBinTrans([j], x, numCols, numChunks), avg, stddev,var,med,mod])
 
 	print("level 1 created!")
 
@@ -99,7 +92,8 @@ def createDCTable(cur, conn, table, levels = numCols, sizeChunk = sizeChunk, num
 				+ colList[i] + " as double precision) AS y FROM " 
 				+ table + " LIMIT " + str(sizeChunk) 
 				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
-			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", [recToBinTrans([i, j], c),int(cur.fetchone()[0])])
+			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+				[recToBinTrans([i, j], c, numCols, numChunks),int(cur.fetchone()[0])])
 
 	#conn.commit()
 
@@ -111,12 +105,14 @@ def createDCTable(cur, conn, table, levels = numCols, sizeChunk = sizeChunk, num
 			for j in itertools.combinations(range(1, numCols + 1), i):
 				vals = []
 				for k in itertools.combinations(range(1, i), i-1):
-					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0 = cast('" + recToBinTrans(k, c) + "' as varbit)")
+					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0 = cast('" 
+						+ recToBinTrans(k, c, numCols, numChunks) + "' as varbit)")
 					vals.append(cur.fetchone()[0])				
 
 				correlation = sum(vals) + 42
 
-				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", [recToBinTrans(j, c), int(correlation)])
+				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+					[recToBinTrans(j, c, numCols, numChunks), int(correlation)])
 
 
 	print("reached")
@@ -185,6 +181,10 @@ def getAllData(cur, conn, table):
 	print(cur.fetchall())
 
 def main():
+	#DC INFO
+	numChunks = 5
+	numCols = 5
+	numRows = 100
 
 	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
@@ -196,19 +196,14 @@ def main():
 	elif(sys.argv[1] == "graph"):
 		graphData(cur, conn, sys.argv[2], sys.argv[3])
 	elif(sys.argv[1] == "create"):
-		createTable(cur, conn, sys.argv[2], sys.argv[3])
+		createTable(cur, conn, sys.argv[2], int(sys.argv[3]))
 	elif(sys.argv[1] == "createdc"):
-		createDCTable(cur, conn, sys.argv[2])
+		createDCTable(cur, conn, sys.argv[2], numCols, numChunks, numCols, numRows)
 
 	conn.commit()
 	cur.close()
 	conn.close()
 	print("Run time: ", clock() - startTime, " seconds")
 
-def test():
-
-
-
-	return
 if __name__=="__main__": startTime = clock(); main()
 #if __name__=="__main__": startTime = clock(); test()

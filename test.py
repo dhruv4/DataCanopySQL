@@ -9,49 +9,67 @@ import pgTest, mdbTest
 def graph(x, t, xtitle, name):
 
 	g = Gnuplot.Gnuplot()
-	g.title(xt + " vs Time")
-	g('set style fill solid 1.0 border -1')
+	g.title(xtitle + " vs Time (sec)")
+	g('set linespoints style fill solid 1.0 border -1')
 
-	g.plot([[x[i], t[i]] for i in len(x)])
+	g.plot([[x[i], t[i]] for i in range(len(x))])
 
 	g.hardcopy('gp_' + name + '.ps', enhanced=1, color=1)
 
 def runExperiment():
-	
+		
+	numTrials = 100
+	numChunks = 5
+	numRows = 1000
+	numStats = 5
+	numCols = 5
+	numLevels = numCols
+
+	times = []
+	vals = []
+
+	#find which sys.arg is "x" and that one's gonna be the variable????????
+
 	if(sys.argv[1] == "pg"):
 
 		conn = pg.connect(dbname="postgres")
 		cur = conn.cursor()
+		pgTest.createTable(cur, conn, 'exp', numCols + 1)
+		pgTest.insertRandData(cur, conn, 'exp', numRows)
 
 	elif(sys.argv[1] == "mdb"):
 
 		conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 		cur = conn.cursor()
-
-	sizeOfTable = 1000
+		mdbTest.createTable(cur, conn, 'exp', numCols + 1)
+		mdbTest.insertRandData(cur, conn, 'exp', numRows)
 	
-	times = []
-	vals = []
-	createTable(cur, conn, 'exp', sizeOfTable)
 	conn.commit()
-	for x in range(length):
 
-		if(val == 0):
-			numChunks = x
-		elif(val == 1):
-			numLevels = x
-		elif(val == 2):
-			numStats = x
-		elif(val == 3):
-			sizeOfTable = x
+	for i in range(numTrials):
 
 		startTime = clock()
-		createDCTable(cur, conn, 'exp')
-		vals.append(x)
-		times.append(clock()-startTime)
+		if(sys.argv[1] == "pg"):
 
-	graph(vals, times, 'title', 'experiment')
+			conn.commit()
+			pgTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+
+		elif(sys.argv[1] == "mdb"):
+
+			conn.commit()
+			mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+
+		cur.execute("DROP TABLE dc_exp;")
+
+		vals.append(i)
+		times.append(clock()-startTime)
+		print("trial", i, "ran")
+
 	cur.execute("DROP TABLE exp")
+
+	print("vals", vals)
+	print("times", times)
+	graph(vals, times, 'title', 'experiment')
 	conn.commit()
 
 def main():
@@ -84,12 +102,3 @@ def main():
 
 #if __name__=="__main__": startTime = clock(); main()
 if __name__=="__main__": startTime = clock(); runExperiment()
-#########
-# plan: 1. get multiple levels done
-# 			-----------level 2 - have correlations 
-# 			-----------level n - have correlations across n columns CHECK
-#			-TURN TABLE INTO DOUBLE PRECISION????????????
-#		2. ---------experimentation functions - graph x against y (probably time) AND change what varies with for loops
-#		3. Change how table structures are stored - chunks vs levels
-#		4. Experiment on accessing data with queries and stuff
-#########
