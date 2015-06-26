@@ -10,15 +10,21 @@ def graph(x, t, xtitle, name):
 
 	g = Gnuplot.Gnuplot()
 	g.title(xtitle + " vs Time (sec)")
-	g('set linespoints style fill solid 1.0 border -1')
+	g('set style data lines fill solid 1.0 border -1')
+	g.ylabel('Time (Sec)')
+	g.xlabel(xtitle)
 
 	g.plot([[x[i], t[i]] for i in range(len(x))])
+
+	g.fit([[x[i], t[i]] for i in range(len(x))])
 
 	g.hardcopy('gp_' + name + '.ps', enhanced=1, color=1)
 
 def runExperiment():
 		
-	numTrials = 100
+	#to combine everything into one file, maybe use a dictionary with 'pg' or 'mdb' as keys, leading to an array
+
+	numTrials = 10
 	numChunks = 5
 	numRows = 1000
 	numStats = 5
@@ -59,7 +65,7 @@ def runExperiment():
 			conn.commit()
 			mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
 
-		cur.execute("DROP TABLE dc_exp;")
+		cur.execute("DROP TABLE dc_exp")
 
 		vals.append(i)
 		times.append(clock()-startTime)
@@ -69,7 +75,7 @@ def runExperiment():
 
 	print("vals", vals)
 	print("times", times)
-	graph(vals, times, 'title', 'experiment')
+	graph(vals, times, 'Trial', 'Monet')
 	conn.commit()
 
 def main():

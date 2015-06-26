@@ -36,8 +36,119 @@ def recToBinTrans(col, chunk, numCols, numChunks):
 		for x in range(chunkBinLen - lcb):
 			chunkBin = "0" + chunkBin
 
-	print(col, chunk, colBin + chunkBin)
 	return colBin + chunkBin
+
+def createDCChunks(cur, conn, table, levels, numChunks, numCols, numRows):
+	
+	maxRows = (2**numCols - 1)*numChunks
+	#sizeChunk = math.ceil(numRows/numChunks)
+	sizeChunk = math.floor(numRows/numChunks)
+
+	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
+	colList = [x[0] for x in cur.fetchall()]
+
+	#level 1 Postgres
+	
+	for x in range(numChunks):
+		createTable(cur, conn, 'dc_' + table + "c" + str(x), 6, 1)
+		for j in range(1, numCols+1):
+
+			cur.execute("SELECT AVG(ss), STDDEV(ss), VAR_SAMP(ss) FROM (SELECT " 
+				+ colList[j] + " AS ss FROM " 
+				+ table + " LIMIT " + str(sizeChunk) 
+				+ " OFFSET " + str(x*sizeChunk) + ") as foo")
+			avg, stddev, var = cur.fetchone()
+
+			med = 0 #median????
+
+			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[j] + " ORDER BY COUNT( ) DESC")
+			#mod = int(cur.fetchone()[0])
+			mod = 0
+			cur.execute("INSERT INTO dc_" + table + "c" + str(x) + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
+				[recToBinTrans([j], x, numCols, numChunks), avg, stddev,var,med,mod])
+
+	#level 2 DC
+
+	for i, j in itertools.combinations(range(1, numCols+1), 2):
+		for c in range(numChunks):
+			cur.execute("SELECT CORR(x, y) FROM (SELECT cast(" + colList[j] + " as double precision) AS x, cast(" 
+				+ colList[i] + " as double precision) AS y FROM " 
+				+ table + " LIMIT " + str(sizeChunk) 
+				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
+			cur.execute("INSERT INTO dc_" + table + "c" + str(c) + " (col0, col1) VALUES (%s, %s)", 
+				[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
+
+	#3-n Levels
+	for i in range(3, levels+1):
+		for c in range(numChunks):
+			for j in itertools.combinations(range(1, numCols + 1), i):
+				vals = []
+				for k in itertools.combinations(range(1, i), i-1):
+					cur.execute("SELECT col1 FROM dc_" + table + "c" + str(c) + " WHERE col0 = cast('" 
+						+ recToBinTrans(k, c, numCols, numChunks) + "' as varbit)")
+					vals.append(cur.fetchone()[0])				
+
+				correlation = sum(vals) + 42
+
+				cur.execute("INSERT INTO dc_" + table + "c" + str(c) + " (col0, col1) VALUES (%s, %s)", 
+					[recToBinTrans(j, c, numCols, numChunks), correlation])
+
+def createDCLevels(cur, conn, table, levels, numChunks, numCols, numRows):
+	
+	maxRows = (2**numCols - 1)*numChunks
+	#sizeChunk = math.ceil(numRows/numChunks)
+	sizeChunk = math.floor(numRows/numChunks)
+	
+	createTable(cur, conn, 'dc_' + table + '1', 6, 1)
+
+	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
+	colList = [x[0] for x in cur.fetchall()]
+
+	#level 1 Postgres
+	for j in range(1, numCols+1):
+		for x in range(numChunks):
+
+			cur.execute("SELECT AVG(ss), STDDEV(ss), VAR_SAMP(ss) FROM (SELECT " 
+				+ colList[j] + " AS ss FROM " 
+				+ table + " LIMIT " + str(sizeChunk) 
+				+ " OFFSET " + str(x*sizeChunk) + ") as foo")
+			avg, stddev, var = cur.fetchone()
+
+			med = 0 #median????
+
+			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[j] + " ORDER BY COUNT( ) DESC")
+			#mod = int(cur.fetchone()[0])
+			mod = 0
+			cur.execute("INSERT INTO dc_" + table + "1 (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
+				[recToBinTrans([j], x, numCols, numChunks), avg, stddev,var,med,mod])
+
+	#level 2 DC
+
+	createTable(cur, conn, 'dc_' + table + '2', 6, 1)
+	for i, j in itertools.combinations(range(1, numCols+1), 2):
+		for c in range(numChunks):
+			cur.execute("SELECT CORR(x, y) FROM (SELECT cast(" + colList[j] + " as double precision) AS x, cast(" 
+				+ colList[i] + " as double precision) AS y FROM " 
+				+ table + " LIMIT " + str(sizeChunk) 
+				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
+			cur.execute("INSERT INTO dc_" + table + "2 (col0, col1) VALUES (%s, %s)", 
+				[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
+
+	#3-n Levels
+	for i in range(3, levels+1):
+		createTable(cur, conn, 'dc_' + table + str(i), 6, 1)
+		for c in range(numChunks):
+			for j in itertools.combinations(range(1, numCols + 1), i):
+				vals = []
+				for k in itertools.combinations(range(1, i), i-1):
+					cur.execute("SELECT col1 FROM dc_" + table + str(i-1) + " WHERE col0 = cast('" 
+						+ recToBinTrans(k, c, numCols, numChunks) + "' as varbit)")
+					vals.append(cur.fetchone()[0])				
+
+				correlation = sum(vals) + 42
+
+				cur.execute("INSERT INTO dc_" + table + str(i) + " (col0, col1) VALUES (%s, %s)", 
+					[recToBinTrans(j, c, numCols, numChunks), correlation])
 
 def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	
@@ -46,33 +157,19 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	sizeChunk = math.floor(numRows/numChunks)
 	
 	createTable(cur, conn, 'dc_' + table, 6, 1)
-	'''
-	-Get data chunk by chunk (see if you can get data row by row or rows by rows)
-	-Calc stats for the chunks
-	-input stats into DC table with bin representation and stuff
-	'''
+
 	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
 	colList = [x[0] for x in cur.fetchall()]
 
 	#level 1 Postgres
 	for j in range(1, numCols+1):
 		for x in range(numChunks):
-			##################CAN THIS BE REDUCED TO ONE SELECT STATEMENT FROM DATASET??
-			cur.execute("SELECT AVG(ss) FROM (SELECT " 
+
+			cur.execute("SELECT AVG(ss), STDDEV(ss), VAR_SAMP(ss) FROM (SELECT " 
 				+ colList[j] + " AS ss FROM " 
 				+ table + " LIMIT " + str(sizeChunk) 
 				+ " OFFSET " + str(x*sizeChunk) + ") as foo")
-			avg = int(cur.fetchone()[0])
-			cur.execute("SELECT STDDEV(ss) FROM (SELECT " 
-				+ colList[j] + " AS ss FROM "
-				+ table + " LIMIT " + str(sizeChunk) 
-				+ " OFFSET " + str(x*sizeChunk) + ") as foo")
-			stddev = int(cur.fetchone()[0])
-			cur.execute("SELECT VAR_SAMP(ss) FROM (SELECT " 
-				+ colList[j] + " AS ss FROM " 
-				+ table + " LIMIT " + str(sizeChunk) 
-				+ " OFFSET " + str(x*sizeChunk) + ") as foo")
-			var = int(cur.fetchone()[0])
+			avg, stddev, var = cur.fetchone()
 
 			med = 0 #median????
 
@@ -81,8 +178,6 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			mod = 0
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
 				[recToBinTrans([j], x, numCols, numChunks), avg, stddev,var,med,mod])
-
-	print("level 1 created!")
 
 	#level 2 DC
 
@@ -93,11 +188,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 				+ table + " LIMIT " + str(sizeChunk) 
 				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-				[recToBinTrans([i, j], c, numCols, numChunks),int(cur.fetchone()[0])])
-
-	#conn.commit()
-
-	print("level 2 created!")
+				[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
 
 	#3-n Levels
 	for i in range(3, levels+1):
@@ -112,21 +203,14 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 				correlation = sum(vals) + 42
 
 				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-					[recToBinTrans(j, c, numCols, numChunks), int(correlation)])
-
-
-	print("reached")
-
-	getAllData(cur, conn, "dc_" + table)
-	print(cur.fetchall())
-	print("data gotten")
+					[recToBinTrans(j, c, numCols, numChunks), correlation])
 
 def createTable(cur, conn, name, numCol, b=0):
 
 	if(b == 1):
 		cols = "(col0 varbit PRIMARY KEY,"
 		for x in range(1, numCol):
-			cols += "col" + str(x) + " int,"
+			cols += "col" + str(x) + " double precision,"
 	else:
 		cols = "("
 		for x in range(numCol):
@@ -144,8 +228,9 @@ def graphData(cur, conn, table, col):
 	cur.execute("SELECT " + col + " FROM " + table)
 	g = Gnuplot.Gnuplot()
 	g.title('A simple example')
-	g('set style data histograms')
+	#g('set style data histograms')
 	g('set style fill solid 1.0 border -1')
+
 	#g.plot([[0,1.1], [1,5.8], [2,3.3], [3,4.2]])
 	data = cur.fetchall()
 	g.plot(data)
@@ -185,6 +270,7 @@ def main():
 	numChunks = 5
 	numCols = 5
 	numRows = 100
+	levels = numCols
 
 	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
@@ -198,12 +284,24 @@ def main():
 	elif(sys.argv[1] == "create"):
 		createTable(cur, conn, sys.argv[2], int(sys.argv[3]))
 	elif(sys.argv[1] == "createdc"):
-		createDCTable(cur, conn, sys.argv[2], numCols, numChunks, numCols, numRows)
+		createDCTable(cur, conn, sys.argv[2], levels, numChunks, numCols, numRows)
 
 	conn.commit()
 	cur.close()
 	conn.close()
 	print("Run time: ", clock() - startTime, " seconds")
 
-if __name__=="__main__": startTime = clock(); main()
-#if __name__=="__main__": startTime = clock(); test()
+def test():
+	numChunks = 5
+	numCols = 5
+	numRows = 100
+
+	conn = pg.connect(dbname="postgres")
+	cur = conn.cursor()
+	createDCLevels(cur, conn, "test", numCols, numChunks, numCols, numRows)
+
+	conn.commit()
+
+
+#if __name__=="__main__": startTime = clock(); main()
+if __name__=="__main__": startTime = clock(); test()
