@@ -1,4 +1,5 @@
-import sys, random, math
+import sys, random, math, os
+import configparser
 import psycopg2 as pg
 import monetdb.sql as mdb
 from time import clock
@@ -6,7 +7,13 @@ from numpy import *
 import Gnuplot, Gnuplot.funcutils
 import pgTest, mdbTest
 
-def graph(x, t, xtitle, name):
+def graph(x, t, xtitle, name, db):
+
+	if not os.path.exists("pg"):
+		os.makedirs("pg")
+
+	if not os.path.exists("mdb"):
+		os.makedirs("mdb")
 
 	g = Gnuplot.Gnuplot()
 	g.title(xtitle + " vs Time (sec)")
@@ -16,20 +23,24 @@ def graph(x, t, xtitle, name):
 
 	g.plot([[x[i], t[i]] for i in range(len(x))])
 
-	g.fit([[x[i], t[i]] for i in range(len(x))])
+	#g.fit([[x[i], t[i]] for i in range(len(x))])
 
-	g.hardcopy('gp_' + name + '.ps', enhanced=1, color=1)
+	g.hardcopy(db + '/gp_' + name + '_' + db + '.ps', enhanced=1, color=1)
 
 def runExperiment():
 		
 	#to combine everything into one file, maybe use a dictionary with 'pg' or 'mdb' as keys, leading to an array
 
-	numTrials = 10
-	numChunks = 5
-	numRows = 1000
-	numStats = 5
-	numCols = 5
-	numLevels = numCols
+	Config = configparser.ConfigParser()
+	Config.read("config.ini")
+
+	numTrials = Config.getint("Experiment Config", "NumberOfTrials")
+
+	numChunks = Config.getint("Data Canopy Config", "NumChunks")
+	numRows = Config.getint("Data Set Config", "NumRows")
+	numStats = Config.getint("Data Canopy Config", "NumStats")
+	numCols = Config.getint("Data Set Config", "NumCols")
+	numLevels = Config.getint("Data Canopy Config", "NumLevels")
 
 	times = []
 	vals = []
@@ -57,26 +68,30 @@ def runExperiment():
 		startTime = clock()
 		if(sys.argv[1] == "pg"):
 
-			conn.commit()
-			pgTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+			timing = pgTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
 
 		elif(sys.argv[1] == "mdb"):
 
-			conn.commit()
-			mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+			timing = mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
 
+		timing['total'] = clock()-startTime
+		times.append(timing)
 		cur.execute("DROP TABLE dc_exp")
-
+		conn.commit()
 		vals.append(i)
-		times.append(clock()-startTime)
 		print("trial", i, "ran")
 
 	cur.execute("DROP TABLE exp")
+	conn.commit()
+	cur.close()
+	conn.close()
 
 	print("vals", vals)
 	print("times", times)
-	graph(vals, times, 'Trial', 'Monet')
-	conn.commit()
+	
+	for j in timing:
+
+		graph(vals, [k[j] for k in times], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title") + j, sys.argv[1])
 
 def main():
 

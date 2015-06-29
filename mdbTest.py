@@ -124,7 +124,7 @@ def createDCLevels(cur, conn, table, levels, numChunks, numCols, numRows):
 
 			#cur.execute("CREATE FUNCTION GET_CHUNK(lim INT, off INT, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm integer)"
 			#	+" RETURN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
-			##^^This is the statement that SHOULD work but doesn't because monetdb doesn't recognize the variables like "col", "lim"
+			##^^This is the statement that SHOULD work but doesn't because monetdb doesn't recognize the variables "col", "tbl", "off", "lim"
 			
 			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (clm integer) "
 				+"BEGIN RETURN SELECT " + colList[i] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
@@ -173,13 +173,24 @@ def createDCLevels(cur, conn, table, levels, numChunks, numCols, numRows):
 
 def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
-	createTable(cur, conn, 'dc_' + table, 6, 1)
+	timing = {}
+
+	startTime = clock()
+
+	if(numCols + math.log(numChunks, 2) >= 64):
+		createTable(cur, conn, 'dc_' + table, 6, 1, 1)
+	else:
+		createTable(cur, conn, 'dc_' + table, 6, 1)
+
 	maxRows = (2**numCols - 1)*numChunks
 	sizeChunk = math.floor(numRows/numChunks)
 	#sizeChunk = math.ceil(numRows/numChunks)
 
 	cur.execute("SELECT * FROM " + table)
 	colList = [x[0] for x in  cur.description]
+
+	timing['setup'] = clock() - startTime
+	startTime = clock()
 
 	#level 1
 	for i in range(1, len(colList)):
@@ -204,6 +215,9 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 				[int(recToBinTrans([i], x, numCols, numChunks), 2), avg, std,var,med,mod])
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 
+	timing['level1'] = clock() - startTime
+	startTime = clock()
+
 	#level 2
 	for i, j in itertools.combinations(range(1, numCols+1), 2):
 		for c in range(numChunks):
@@ -216,6 +230,9 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 
 	conn.commit()
+
+	timing['level2'] = clock() - startTime
+	startTime = clock()
 
 	#3-n Levels
 	for i in range(3, levels+1):
@@ -234,10 +251,18 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
 			conn.commit()
  
-def createTable(cur, conn, name, numCol, p=0):
+	timing['leveln'] = clock() - startTime
+	startTime = clock()
+
+	return timing
+
+def createTable(cur, conn, name, numCol, p=0, l=0):
 
 	if(p == 1):
-		cols = "(col0 int PRIMARY KEY,"
+		if(l == 1):
+			cols = "(col0 bigint PRIMARY KEY,"
+		else:
+			cols = "(col0 int PRIMARY KEY,"
 		for x in range(1, numCol):
 			cols += "col" + str(x) + " double precision,"
 	else:
@@ -328,7 +353,12 @@ def test():
 	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
 
-	createDCChunks(cur, conn, "test", levels, numChunks, numCols, numRows)
+
+	createTable(cur, conn, "test", 5)
+	insertRandData(cur, conn, "test", 100)
+	timing = createDCTable(cur, conn, "test", levels, numChunks, numCols, numRows)
+
+	print(timing)
 
 #if __name__=="__main__": startTime = clock(); main()
 if __name__=="__main__": startTime = clock(); test()

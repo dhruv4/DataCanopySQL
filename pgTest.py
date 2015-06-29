@@ -152,14 +152,21 @@ def createDCLevels(cur, conn, table, levels, numChunks, numCols, numRows):
 
 def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	
+	timing = {}
+
+	startTime = clock()
+
 	maxRows = (2**numCols - 1)*numChunks
 	#sizeChunk = math.ceil(numRows/numChunks)
 	sizeChunk = math.floor(numRows/numChunks)
-	
+
 	createTable(cur, conn, 'dc_' + table, 6, 1)
 
 	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
 	colList = [x[0] for x in cur.fetchall()]
+
+	timing['setup'] = clock() - startTime
+	startTime = clock()
 
 	#level 1 Postgres
 	for j in range(1, numCols+1):
@@ -178,7 +185,10 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			mod = 0
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
 				[recToBinTrans([j], x, numCols, numChunks), avg, stddev,var,med,mod])
-
+	
+	timing['level1'] = clock() - startTime
+	startTime = clock()
+	
 	#level 2 DC
 
 	for i, j in itertools.combinations(range(1, numCols+1), 2):
@@ -189,6 +199,9 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 				[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
+
+	timing['level2'] = clock() - startTime
+	startTime = clock()
 
 	#3-n Levels
 	for i in range(3, levels+1):
@@ -204,6 +217,11 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
 				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 					[recToBinTrans(j, c, numCols, numChunks), correlation])
+
+	timing['leveln'] = clock() - startTime
+	startTime = clock()
+
+	return timing
 
 def createTable(cur, conn, name, numCol, b=0):
 
@@ -298,10 +316,11 @@ def test():
 
 	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
-	createDCLevels(cur, conn, "test", numCols, numChunks, numCols, numRows)
+	
+	timing = createDCTable(cur, conn, "test", numCols, numChunks, numCols, numRows)
 
 	conn.commit()
-
+	print(timing)
 
 #if __name__=="__main__": startTime = clock(); main()
 if __name__=="__main__": startTime = clock(); test()
