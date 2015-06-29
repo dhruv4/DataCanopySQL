@@ -354,7 +354,7 @@ def test():
 	cur = conn.cursor()
 
 
-	createTable(cur, conn, "test", 5)
+	createTable(cur, conn, "test", 6)
 	insertRandData(cur, conn, "test", 100)
 	timing = createDCTable(cur, conn, "test", levels, numChunks, numCols, numRows)
 
