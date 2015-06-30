@@ -203,7 +203,11 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (clm integer) "
 				+"BEGIN RETURN SELECT " + colList[i] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
 			
-			cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm), MEDIAN(clm) FROM GET_CHUNK()")
+			#cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm), MEDIAN(clm) FROM GET_CHUNK()")
+
+			#removed median for consistency
+
+			cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm), FROM GET_CHUNK()")
 
 			#cur.execute("SELECT AVG(banana) FROM GET_CHUNK()")
 			avg, std, var, med = cur.fetchone()
