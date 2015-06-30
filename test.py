@@ -17,7 +17,7 @@ def graph(x, t, xtitle, name, db):
 
 	g = Gnuplot.Gnuplot()
 	g.title(xtitle + " vs Time (sec)")
-	g('set style data lines fill solid 1.0 border -1')
+	g('set style data lines')
 	g.ylabel('Time (Sec)')
 	g.xlabel(xtitle)
 
