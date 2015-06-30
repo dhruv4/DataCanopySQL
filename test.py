@@ -101,8 +101,12 @@ def runExperiment():
 
 			elif(sys.argv[1] == "mdb"):
 
-				timing = mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
-
+				s, one, two, n = mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+				timing['setup'] += s
+				timing['level1'] += one
+				timing['level2'] += two
+				timing['leveln'] += n
+				
 			timing['total'] += time.time()-startTime
 			cur.execute("DROP TABLE dc_exp")
 			conn.commit()
