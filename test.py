@@ -32,7 +32,7 @@ def graph(x, t, xtitle, name, db):
 
 	#g.fit([[x[i], t[i]] for i in range(len(x))])
 
-	g.hardcopy(db + '/gp_' + name + '_' + db + '.ps', enhanced=1, color=1)
+	g.hardcopy(db + '/gp_' + name + '_' + db + '_' + xtitle + '.ps', enhanced=1, color=1)
 
 def runExperiment():
 		
