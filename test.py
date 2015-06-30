@@ -34,11 +34,6 @@ def graph(x, t, xtitle, name, db):
 
 	g.hardcopy(db + '/gp_' + name + '_' + db + '.ps', enhanced=1, color=1)
 
-def exp_range(start, end, mul):
-    while start < end:
-        yield start
-        start *= mul
-
 def runExperiment():
 		
 	#to combine everything into one file, maybe use a dictionary with 'pg' or 'mdb' as keys, leading to an array
@@ -59,32 +54,42 @@ def runExperiment():
 
 	#find which sys.arg is "x" and that one's gonna be the variable????????
 
-	if(sys.argv[1] == "pg"):
-
-		conn = pg.connect(dbname="postgres")
-		cur = conn.cursor()
-		pgTest.createTable(cur, conn, 'exp', numCols + 1)
-		pgTest.insertRandData(cur, conn, 'exp', numRows)
-
-	elif(sys.argv[1] == "mdb"):
-
-		conn = mdb.connect(username="monetdb", password="monetdb", database="test")
-		cur = conn.cursor()
-		mdbTest.createTable(cur, conn, 'exp', numCols + 1)
-		mdbTest.insertRandData(cur, conn, 'exp', numRows)
-	
-	conn.commit()
+	r = int(math.log(numRows, 10))
+	print(r)
 
 	#for i in range(numTrials):
-	for i in exp_range(10, numRows, 10):
-		startTime = clock()
+	for i in range(1, r):
+
+		numRows = 10**i
+
 		if(sys.argv[1] == "pg"):
 
-			timing = pgTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, i)
+			conn = pg.connect(dbname="postgres")
+			cur = conn.cursor()
+			pgTest.createTable(cur, conn, 'exp', numCols + 1)
+			pgTest.insertRandData(cur, conn, 'exp', numRows)
 
 		elif(sys.argv[1] == "mdb"):
 
-			timing = mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, i)
+			conn = mdb.connect(username="monetdb", password="monetdb", database="test")
+			cur = conn.cursor()
+			mdbTest.createTable(cur, conn, 'exp', numCols + 1)
+			mdbTest.insertRandData(cur, conn, 'exp', numRows)
+		
+		conn.commit()
+
+
+		startTime = clock()
+
+		numRows = 10**i
+
+		if(sys.argv[1] == "pg"):
+
+			timing = pgTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+
+		elif(sys.argv[1] == "mdb"):
+
+			timing = mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
 
 		timing['total'] = clock()-startTime
 		times.append(timing)
@@ -93,10 +98,10 @@ def runExperiment():
 		vals.append(i)
 		print("trial", i, "ran")
 
-	cur.execute("DROP TABLE exp")
-	conn.commit()
-	cur.close()
-	conn.close()
+		cur.execute("DROP TABLE exp")
+		conn.commit()
+		cur.close()
+		conn.close()
 
 	print("vals", vals)
 	print("times", times)

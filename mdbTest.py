@@ -207,10 +207,12 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
 			#removed median for consistency
 
-			cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm), FROM GET_CHUNK()")
+			cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm) FROM GET_CHUNK()")
 
-			#cur.execute("SELECT AVG(banana) FROM GET_CHUNK()")
-			avg, std, var, med = cur.fetchone()
+			#avg, std, var, med = cur.fetchone()
+			avg, std, var = cur.fetchone()
+
+			med = 0
 
 			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[i] + " ORDER BY COUNT( ) DESC")
 			#mod = int(cur.fetchone()[0])
