@@ -34,6 +34,11 @@ def graph(x, t, xtitle, name, db):
 
 	g.hardcopy(db + '/gp_' + name + '_' + db + '.ps', enhanced=1, color=1)
 
+def exp_range(start, end, mul):
+    while start < end:
+        yield start
+        start *= mul
+
 def runExperiment():
 		
 	#to combine everything into one file, maybe use a dictionary with 'pg' or 'mdb' as keys, leading to an array
@@ -70,16 +75,16 @@ def runExperiment():
 	
 	conn.commit()
 
-	for i in range(numTrials):
-
+	#for i in range(numTrials):
+	for i in exp_range(10, numRows, 10):
 		startTime = clock()
 		if(sys.argv[1] == "pg"):
 
-			timing = pgTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+			timing = pgTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, i)
 
 		elif(sys.argv[1] == "mdb"):
 
-			timing = mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+			timing = mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, i)
 
 		timing['total'] = clock()-startTime
 		times.append(timing)
