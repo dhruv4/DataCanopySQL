@@ -173,7 +173,7 @@ def createDCLevels(cur, conn, table, levels, numChunks, numCols, numRows):
 
 def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
-	timing = {}
+	timing = []
 
 	startTime = time.time()
 
@@ -189,7 +189,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	cur.execute("SELECT * FROM " + table)
 	colList = [x[0] for x in  cur.description]
 
-	timing['setup'] = time.time() - startTime
+	timing.append(time.time() - startTime)
 	startTime = time.time()
 
 	#level 1
@@ -221,7 +221,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 				[int(recToBinTrans([i], x, numCols, numChunks), 2), avg, std,var,med,mod])
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 
-	timing['level1'] = time.time() - startTime
+	timing.append(time.time() - startTime)
 	startTime = time.time()
 
 	#level 2
@@ -237,7 +237,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
 	conn.commit()
 
-	timing['level2'] = time.time() - startTime
+	timing.append(time.time() - startTime)
 	startTime = time.time()
 
 	#3-n Levels
@@ -257,8 +257,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
 			conn.commit()
  
-	timing['leveln'] = time.time() - startTime
-	startTime = time.time()
+	timing.append(time.time() - startTime)
 
 	return timing
 
