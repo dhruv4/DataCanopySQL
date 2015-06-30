@@ -2,7 +2,7 @@ import sys, random, math, os
 import configparser
 import psycopg2 as pg
 import monetdb.sql as mdb
-from time import clock
+import time
 from numpy import *
 import Gnuplot, Gnuplot.funcutils
 import pgTest, mdbTest
@@ -55,7 +55,7 @@ def runExperiment():
 	#find which sys.arg is "x" and that one's gonna be the variable????????
 
 	r = int(math.log(numRows, 10)) + 1
-	print(r + 1)
+	print(r)
 
 	#for i in range(numTrials):
 	for i in range(1, r):
@@ -79,7 +79,7 @@ def runExperiment():
 		conn.commit()
 
 
-		startTime = clock()
+		startTime = time.time()
 
 		numRows = 10**i
 
@@ -91,7 +91,7 @@ def runExperiment():
 
 			timing = mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
 
-		timing['total'] = clock()-startTime
+		timing['total'] = time.time()-startTime
 		times.append(timing)
 		cur.execute("DROP TABLE dc_exp")
 		conn.commit()
@@ -136,7 +136,7 @@ def main():
 	conn.commit()
 	cur.close()
 	conn.close()
-	print("Run time: ", clock() - startTime, " seconds")
+	print("Run time: ", time.time() - startTime, " seconds")
 
-#if __name__=="__main__": startTime = clock(); main()
-if __name__=="__main__": startTime = clock(); runExperiment()
+#if __name__=="__main__": startTime = time.time(); main()
+if __name__=="__main__": startTime = time.time(); runExperiment()

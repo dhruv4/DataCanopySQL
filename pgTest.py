@@ -1,7 +1,7 @@
 #pgTest.py
 import sys, random, math, itertools
 import psycopg2 as pg
-from time import clock
+import time
 from numpy import *
 import Gnuplot, Gnuplot.funcutils
 
@@ -154,7 +154,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	
 	timing = {}
 
-	startTime = clock()
+	startTime = time.time()
 
 	maxRows = (2**numCols - 1)*numChunks
 	#sizeChunk = math.ceil(numRows/numChunks)
@@ -165,8 +165,8 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
 	colList = [x[0] for x in cur.fetchall()]
 
-	timing['setup'] = clock() - startTime
-	startTime = clock()
+	timing['setup'] = time.time() - startTime
+	startTime = time.time()
 
 	#level 1 Postgres
 	for j in range(1, numCols+1):
@@ -186,8 +186,8 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
 				[recToBinTrans([j], x, numCols, numChunks), avg, stddev,var,med,mod])
 	
-	timing['level1'] = clock() - startTime
-	startTime = clock()
+	timing['level1'] = time.time() - startTime
+	startTime = time.time()
 	
 	#level 2 DC
 
@@ -200,8 +200,8 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 				[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
 
-	timing['level2'] = clock() - startTime
-	startTime = clock()
+	timing['level2'] = time.time() - startTime
+	startTime = time.time()
 
 	#3-n Levels
 	for i in range(3, levels+1):
@@ -218,8 +218,8 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 					[recToBinTrans(j, c, numCols, numChunks), correlation])
 
-	timing['leveln'] = clock() - startTime
-	startTime = clock()
+	timing['leveln'] = time.time() - startTime
+	startTime = time.time()
 
 	return timing
 
@@ -307,7 +307,7 @@ def main():
 	conn.commit()
 	cur.close()
 	conn.close()
-	print("Run time: ", clock() - startTime, " seconds")
+	print("Run time: ", time.time() - startTime, " seconds")
 
 def test():
 	numChunks = 5
@@ -322,5 +322,5 @@ def test():
 	conn.commit()
 	print(timing)
 
-#if __name__=="__main__": startTime = clock(); main()
-if __name__=="__main__": startTime = clock(); test()
+#if __name__=="__main__": startTime = time.time(); main()
+if __name__=="__main__": startTime = time.time(); test()

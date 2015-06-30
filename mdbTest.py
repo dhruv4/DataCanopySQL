@@ -1,7 +1,7 @@
 #mdbTest.py
 import sys, random, math, itertools
 import monetdb.sql as mdb
-from time import clock
+import time
 from numpy import *
 import Gnuplot, Gnuplot.funcutils
 
@@ -175,7 +175,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
 	timing = {}
 
-	startTime = clock()
+	startTime = time.time()
 
 	if(numCols + math.log(numChunks, 2) >= 64):
 		createTable(cur, conn, 'dc_' + table, 6, 1, 1)
@@ -189,8 +189,8 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	cur.execute("SELECT * FROM " + table)
 	colList = [x[0] for x in  cur.description]
 
-	timing['setup'] = clock() - startTime
-	startTime = clock()
+	timing['setup'] = time.time() - startTime
+	startTime = time.time()
 
 	#level 1
 	for i in range(1, len(colList)):
@@ -221,8 +221,8 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 				[int(recToBinTrans([i], x, numCols, numChunks), 2), avg, std,var,med,mod])
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 
-	timing['level1'] = clock() - startTime
-	startTime = clock()
+	timing['level1'] = time.time() - startTime
+	startTime = time.time()
 
 	#level 2
 	for i, j in itertools.combinations(range(1, numCols+1), 2):
@@ -237,8 +237,8 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
 	conn.commit()
 
-	timing['level2'] = clock() - startTime
-	startTime = clock()
+	timing['level2'] = time.time() - startTime
+	startTime = time.time()
 
 	#3-n Levels
 	for i in range(3, levels+1):
@@ -257,8 +257,8 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
 			conn.commit()
  
-	timing['leveln'] = clock() - startTime
-	startTime = clock()
+	timing['leveln'] = time.time() - startTime
+	startTime = time.time()
 
 	return timing
 
@@ -348,7 +348,7 @@ def main():
 	conn.commit()
 	cur.close()
 	conn.close()
-	print("Run time: ", clock() - startTime, " seconds")
+	print("Run time: ", time.time() - startTime, " seconds")
 
 def test():
 	numChunks = 5
@@ -366,5 +366,5 @@ def test():
 
 	print(timing)
 
-#if __name__=="__main__": startTime = clock(); main()
-if __name__=="__main__": startTime = clock(); test()
+#if __name__=="__main__": startTime = time.time(); main()
+if __name__=="__main__": startTime = time.time(); test()
