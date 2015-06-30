@@ -15,6 +15,13 @@ def graph(x, t, xtitle, name, db):
 	if not os.path.exists("mdb"):
 		os.makedirs("mdb")
 
+	f = open(db + '/gp_' + name + '_' + db + '.txt', 'w')
+	for i in range(len(x)):
+		f.write(str(x[i]) + ',' + str(t[i]) + '\n')
+	f.close()
+	return
+
+
 	g = Gnuplot.Gnuplot()
 	g.title(xtitle + " vs Time (sec)")
 	g('set style data lines')
