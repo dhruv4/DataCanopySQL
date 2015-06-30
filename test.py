@@ -15,7 +15,7 @@ def graph(x, t, xtitle, name, db):
 	if not os.path.exists("mdb"):
 		os.makedirs("mdb")
 
-	f = open(db + '/gp_' + name + '_' + db + '.txt', 'w')
+	f = open(db + '/gp_' + name + '_' + db + '_' + xtitle +  '.txt', 'w')
 	for i in range(len(x)):
 		f.write(str(x[i]) + ',' + str(t[i]) + '\n')
 	f.close()
