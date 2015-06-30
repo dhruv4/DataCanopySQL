@@ -57,7 +57,6 @@ def runExperiment():
 	r = int(math.log(numRows, 10)) + 1
 	print(r)
 
-	#for i in range(numTrials):
 	for i in range(1, r):
 
 		numRows = 10**i
@@ -78,25 +77,41 @@ def runExperiment():
 		
 		conn.commit()
 
+		timing = {}
+		timing['setup'] = 0
+		timing['level1'] = 0
+		timing['level2'] = 0
+		timing['leveln'] = 0
+		timing['total'] = 0
 
-		startTime = time.time()
+		for j in range(numTrials):
 
-		numRows = 10**i
+			startTime = time.time()
 
-		if(sys.argv[1] == "pg"):
+			numRows = 10**i
 
-			timing = pgTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+			if(sys.argv[1] == "pg"):
 
-		elif(sys.argv[1] == "mdb"):
+				s, one, two, n = pgTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
 
-			timing = mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+				timing['setup'] += s
+				timing['level1'] += one
+				timing['level2'] += two
+				timing['leveln'] += n
 
-		timing['total'] = time.time()-startTime
+			elif(sys.argv[1] == "mdb"):
+
+				timing = mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+
+			timing['total'] += time.time()-startTime
+			cur.execute("DROP TABLE dc_exp")
+			conn.commit()
+
+		for x in timing:
+			timing[x] /= numTrials
 		times.append(timing)
-		cur.execute("DROP TABLE dc_exp")
-		conn.commit()
-		vals.append(i)
-		print("trial", i, "ran")
+		vals.append(numRows)
+		print("trial", numRows, "ran")
 
 		cur.execute("DROP TABLE exp")
 		conn.commit()

@@ -152,7 +152,7 @@ def createDCLevels(cur, conn, table, levels, numChunks, numCols, numRows):
 
 def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	
-	timing = {}
+	timing = []
 
 	startTime = time.time()
 
@@ -165,7 +165,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
 	colList = [x[0] for x in cur.fetchall()]
 
-	timing['setup'] = time.time() - startTime
+	timing.append(time.time() - startTime)
 	startTime = time.time()
 
 	#level 1 Postgres
@@ -186,7 +186,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
 				[recToBinTrans([j], x, numCols, numChunks), avg, stddev,var,med,mod])
 	
-	timing['level1'] = time.time() - startTime
+	timing.append(time.time() - startTime)
 	startTime = time.time()
 	
 	#level 2 DC
@@ -200,7 +200,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 				[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
 
-	timing['level2'] = time.time() - startTime
+	timing.append(time.time() - startTime)
 	startTime = time.time()
 
 	#3-n Levels
@@ -218,8 +218,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 					[recToBinTrans(j, c, numCols, numChunks), correlation])
 
-	timing['leveln'] = time.time() - startTime
-	startTime = time.time()
+	timing.append(time.time() - startTime)
 
 	return timing
 
