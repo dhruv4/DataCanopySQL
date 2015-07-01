@@ -54,7 +54,7 @@ def runExperiment():
 
 	#find which sys.arg is "x" and that one's gonna be the variable????????
 
-	r = int(math.log(numRows, 10)) + 1
+	r = int(math.ceil(math.log(numRows, 10)))
 	print(r)
 
 	for i in range(1, r):
