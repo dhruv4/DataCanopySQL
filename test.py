@@ -19,8 +19,6 @@ def graph(x, t, xtitle, name, db):
 	for i in range(len(x)):
 		f.write(str(x[i]) + ',' + str(t[i]) + '\n')
 	f.close()
-	return
-
 
 	g = Gnuplot.Gnuplot()
 	g.title(xtitle + " vs Time (sec)")
@@ -58,6 +56,8 @@ def runExperiment():
 	r = int(math.ceil(math.log(numCols, 2)))
 	####^^CHANGE THIS TO CHANGE VARIABLE
 	print(r)
+
+	r = 2
 
 	for i in range(1, r+1):
 
