@@ -40,6 +40,7 @@ def runExperiment():
 
 	Config = configparser.ConfigParser()
 	Config.read("config.ini")
+	####^^CHANGE THE CONFIG FILE TO CHANGE VARIABLES
 
 	numTrials = Config.getint("Experiment Config", "NumberOfTrials")
 
@@ -55,11 +56,13 @@ def runExperiment():
 	#find which sys.arg is "x" and that one's gonna be the variable????????
 
 	r = int(math.ceil(math.log(numRows, 10)))
+	####^^CHANGE THIS TO CHANGE VARIABLE
 	print(r)
 
-	for i in range(1, r):
+	for i in range(1, r+1):
 
 		numRows = 10**i
+		####^^CHANGE THIS TO CHANGE VARIABLE
 
 		if(sys.argv[1] == "pg"):
 
@@ -89,6 +92,7 @@ def runExperiment():
 			startTime = time.time()
 
 			numRows = 10**i
+			####^^CHANGE THIS TO CHANGE VARIABLE
 
 			if(sys.argv[1] == "pg"):
 
@@ -116,6 +120,7 @@ def runExperiment():
 		times.append(timing)
 		vals.append(numRows)
 		print("trial", numRows, "ran")
+		####^^CHANGE THIS TO CHANGE VARIABLE
 
 		cur.execute("DROP TABLE exp")
 		conn.commit()
