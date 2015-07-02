@@ -194,8 +194,27 @@ def runExperiment():
 def runAccessExperiment():
 
 	#test access
-	
+	if(sys.argv[1] == "pg"):
 
+		conn = pg.connect(dbname="postgres")
+		cur = conn.cursor()
+		pgTest.createTable(cur, conn, 'exp', numCols + 1)
+		pgTest.insertRandData(cur, conn, 'exp', numRows)
+		pgTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+
+	elif(sys.argv[1] == "mdb"):
+
+		conn = mdb.connect(username="monetdb", password="monetdb", database="test")
+		cur = conn.cursor()
+		mdbTest.createTable(cur, conn, 'exp', numCols + 1)
+		mdbTest.insertRandData(cur, conn, 'exp', numRows)
+		mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+	
+	conn.commit()	
+
+	#for x in range(numLevels):
+	#	for i in range(numTrials):
+	#		access
 	return
 
 def main():
