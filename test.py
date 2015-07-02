@@ -4,7 +4,7 @@ import psycopg2 as pg
 import monetdb.sql as mdb
 import time
 from numpy import *
-#import Gnuplot, Gnuplot.funcutils
+import Gnuplot, Gnuplot.funcutils
 import matplotlib.pyplot as plt
 import pgTest, mdbTest
 
@@ -20,8 +20,20 @@ def graph(x, t, xtitle, name, db):
 	for i in range(len(x)):
 		f.write(str(x[i]) + ',' + str(t[i]) + '\n')
 	f.close()
+	'''
+	g = Gnuplot.Gnuplot()
 
-	#g = Gnuplot.Gnuplot()
+
+	outfile = db + '/gp_' + name + '_' + db + '_' + xtitle + '.ps'
+
+	g("set grid")
+	g("set key left")
+	g("set terminal pdf enhanced font 'times,12'")
+	g("set output '"+outfile+"'")
+	#g("set format y '%sx10^{%S}'")
+	g("set xlabel '"+xtitle+"'")
+	g("set format y '%1.2e'")
+	'''
 	#g.title(xtitle + " vs Time (sec)")
 	#g('set style data lines')
 	#g.ylabel('Time (Sec)')
@@ -43,6 +55,44 @@ def graph(x, t, xtitle, name, db):
 	#plt.plot([[x[i], t[i]] for i in range(len(x))])
 	
 	plt.savefig(db + '/gp_' + name + '_' + db + '_' + xtitle + '.png')
+
+def Plot(filename,x_value,y_values,outfile):
+
+	#open_file = pd.read_csv(filename)
+	#x = np.array(open_file[x_value])
+
+	# instantiate gnuplot
+	g = gp.Gnuplot()
+
+	# initialize an array for plot data
+	plot_data = []
+
+	# create gnuplot data
+	#for y_value in y_values:
+	#	y = np.array(open_file[y_value])
+	#	y_label = y_value.replace("_"," ")
+	#	plot_data.append(gp.Data(x,y,with_="lp",title=y_label))
+
+
+	# set the labels
+	#x_label = x_value.replace("_"," ")
+
+	gp.Data(x,y,with_="lp",title=y_label)
+
+	#formatting options
+	g("set grid")
+	g("set key left")
+	g("set terminal pdf enhanced font 'times,12'")
+	g("set output '"+outfile+"'")
+	#g("set format y '%sx10^{%S}'")
+	g("set xlabel '"+x_label+"'")
+	g("set format y '%1.2e'")
+
+
+
+	#plot
+	#g.plot(plot_data)
+	#g.plot([[x[i], t[i]] for i in range(len(x))])
 
 def runExperiment():
 		
@@ -140,6 +190,13 @@ def runExperiment():
 	for j in timing:
 
 		graph(vals, [k[j] for k in times], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title") + j, sys.argv[1])
+
+def runAccessExperiment():
+
+	#test access
+	
+
+	return
 
 def main():
 
