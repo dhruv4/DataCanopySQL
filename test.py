@@ -42,7 +42,7 @@ def graph(x, t, xtitle, name, db):
 	plt.xlabel(xtitle)
 	#plt.plot([[x[i], t[i]] for i in range(len(x))])
 	
-	plt.savefig(db + '/gp_' + name + '_' + db + '_' + xtitle + '.ps')
+	plt.savefig(db + '/gp_' + name + '_' + db + '_' + xtitle + '.png')
 
 def runExperiment():
 		
