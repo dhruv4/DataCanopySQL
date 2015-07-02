@@ -315,7 +315,7 @@ def insertRandData(cur, conn, table, length):
 		exe = exe[:-2]
 		exe += ")"
 
-		cur.execute(exe, [random.randint(0, 256) for x in range(len(colList))])
+		cur.execute(exe, [random.randint(0, 5) for x in range(len(colList))])
 
 
 def getAllData(cur, conn, table):

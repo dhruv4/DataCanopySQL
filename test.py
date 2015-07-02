@@ -4,7 +4,8 @@ import psycopg2 as pg
 import monetdb.sql as mdb
 import time
 from numpy import *
-import Gnuplot, Gnuplot.funcutils
+#import Gnuplot, Gnuplot.funcutils
+import matplotlib.pyplot as plt
 import pgTest, mdbTest
 
 def graph(x, t, xtitle, name, db):
@@ -20,17 +21,28 @@ def graph(x, t, xtitle, name, db):
 		f.write(str(x[i]) + ',' + str(t[i]) + '\n')
 	f.close()
 
-	g = Gnuplot.Gnuplot()
-	g.title(xtitle + " vs Time (sec)")
-	g('set style data lines')
-	g.ylabel('Time (Sec)')
-	g.xlabel(xtitle)
+	#g = Gnuplot.Gnuplot()
+	#g.title(xtitle + " vs Time (sec)")
+	#g('set style data lines')
+	#g.ylabel('Time (Sec)')
+	#g.xlabel(xtitle)
 
-	g.plot([[x[i], t[i]] for i in range(len(x))])
+	#g.plot([[x[i], t[i]] for i in range(len(x))])
 
 	#g.fit([[x[i], t[i]] for i in range(len(x))])
 
-	g.hardcopy(db + '/gp_' + name + '_' + db + '_' + xtitle + '.ps', enhanced=1, color=1)
+	#g.hardcopy(db + '/gp_' + name + '_' + db + '_' + xtitle + '.ps', enhanced=1, color=1)
+
+	print("x", x, "t", t, name)
+
+	plt.plot(x, t, 'bo')
+
+	plt.title(xtitle + " vs Time (sec)")
+	plt.ylabel('Time (Sec)')
+	plt.xlabel(xtitle)
+	#plt.plot([[x[i], t[i]] for i in range(len(x))])
+	
+	plt.savefig(db + '/gp_' + name + '_' + db + '_' + xtitle + '.ps')
 
 def runExperiment():
 		
@@ -55,9 +67,6 @@ def runExperiment():
 
 	r = int(math.ceil(math.log(numCols, 2)))
 	####^^CHANGE THIS TO CHANGE VARIABLE
-	print(r)
-
-	r = 2
 
 	for i in range(1, r+1):
 
