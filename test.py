@@ -10,6 +10,9 @@ import pgTest, mdbTest
 
 def graph(x, t, xtitle, name, db):
 
+	print("plot stopped")
+	exit(0)
+
 	if not os.path.exists("pg"):
 		os.makedirs("pg")
 
@@ -116,11 +119,15 @@ def runExperiment():
 	#find which sys.arg is "x" and that one's gonna be the variable????????
 
 	r = int(math.ceil(math.log(numCols, 2)))
+	#r = int(math.ceil(math.log(numRows, 10)))
 	####^^CHANGE THIS TO CHANGE VARIABLE
 
-	for i in range(1, r+1):
+	#for i in range(1, r+1):
+	for i in range(5, r+1):
 
 		numCols = 2**i
+		numCols = 30
+		#numRows = 10**i
 		####^^CHANGE THIS TO CHANGE VARIABLE
 
 		if(sys.argv[1] == "pg"):
@@ -177,7 +184,10 @@ def runExperiment():
 		
 		vals.append(numCols)
 		print("trial", numCols, "ran")
-		####^^CHANGE THIS TO CHANGE VARIABLE
+
+		#vals.append(numRows)
+		#print("trial", numRows, "ran")
+		####^^CHANGE THESE TO CHANGE VARIABLE
 
 		cur.execute("DROP TABLE exp")
 		conn.commit()
@@ -190,8 +200,15 @@ def runExperiment():
 	for j in timing:
 
 		graph(vals, [k[j] for k in times], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title") + j, sys.argv[1])
-
+	
+		
 def runAccessExperiment():
+
+	numTrials = 100
+	numChunks = 5
+	numCols = 16
+	numLevels = numCols
+	numRows = 1000
 
 	#test access
 	if(sys.argv[1] == "pg"):
@@ -212,10 +229,23 @@ def runAccessExperiment():
 	
 	conn.commit()	
 
-	#for x in range(numLevels):
-	#	for i in range(numTrials):
-	#		access
-	return
+	timing = []
+
+	for x in range(numLevels):
+		timeSum = 0
+		for i in range(numTrials):
+			startTime = time.time()
+			if(sys.argv[1] == "mdb"):
+				#	cur.execute("SELECT * FROM dc_exp WHERE col0 = '" + mdbTest.recToBinTrans() + "'")
+				continue
+			else:
+				#	cur.execute("SELECT * FROM dc_exp WHERE col0 = '" + mdbTest.recToBinTrans() + "'")
+				continue
+			timeSum += time.time() - startTime
+
+		timing.append(timeSum/numTrials)
+
+	graph(range(numLevels), timing, "levels", "AccessTest", sys.argv[1])
 
 def main():
 

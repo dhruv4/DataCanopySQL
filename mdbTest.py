@@ -83,6 +83,7 @@ def createDCChunks(cur, conn, table, levels, numChunks, numCols, numRows):
 	#level 2
 	for i, j in itertools.combinations(range(1, numCols+1), 2):
 		for c in range(numChunks):
+
 			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (cl1 integer, cl2 integer) "
 			+"BEGIN RETURN SELECT " + colList[i] + "," + colList[j] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
 			cur.execute("SELECT CORR(cl1, cl2) FROM GET_CHUNK()")
@@ -217,12 +218,21 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[i] + " ORDER BY COUNT( ) DESC")
 			#mod = int(cur.fetchone()[0])
 			mod = 0
+
+			print(numCols)
+			banana = recToBinTrans([i], x, numCols, numChunks)
+			print("level 1:", banana)
+			#banana = int(banana, 2)
+			#print("level 1 bin:", banana)
+
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", 
-				[int(recToBinTrans([i], x, numCols, numChunks), 2), avg, std,var,med,mod])
+				[banana, avg, std,var,med,mod])
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 
 	timing.append(time.time() - startTime)
 	startTime = time.time()
+
+	print("reached 2")
 
 	#level 2
 	for i, j in itertools.combinations(range(1, numCols+1), 2):
@@ -231,8 +241,10 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			+ "BEGIN RETURN SELECT " + colList[i] + "," + colList[j] + " FROM " + table 
 			+ " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
 			cur.execute("SELECT CORR(cl1, cl2) FROM GET_CHUNK()")
+			#banana = int(recToBinTrans([i, j], c, numCols, numChunks), 2)
+			banana = recToBinTrans([i, j], c, numCols, numChunks)
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-				[int(recToBinTrans([i, j], c, numCols, numChunks), 2), cur.fetchone()[0]])
+				[banana, cur.fetchone()[0]])
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 
 	conn.commit()
@@ -240,21 +252,26 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	timing.append(time.time() - startTime)
 	startTime = time.time()
 
+	print("reached 3")
+
 	#3-n Levels
 	for i in range(3, levels+1):
+		print("level", i)
 		for c in range(numChunks):
 			for j in itertools.combinations(range(1, numCols + 1), i):
 				vals = []
 				for k in itertools.combinations(range(1, i), i-1):
-					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0=" 
-						+ str(int(recToBinTrans(k, c, numCols, numChunks), 2)))
+					banana = str(recToBinTrans(k, c, numCols, numChunks))
+					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
+					#	+ str(int(recToBinTrans(k, c, numCols, numChunks), 2)))
+						+ recToBinTrans(k, c, numCols, numChunks) + "'")
 					vals.append(cur.fetchone()[0])
 
 				correlation = sum(vals) + 42
 
 				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-					[str(int(recToBinTrans(j, c, numCols, numChunks), 2)), correlation])
-
+				#	[str(int(recToBinTrans(j, c, numCols, numChunks), 2)), correlation])
+					[str(recToBinTrans(j, c, numCols, numChunks)), correlation])
 			conn.commit()
  
 	timing.append(time.time() - startTime)
@@ -265,9 +282,9 @@ def createTable(cur, conn, name, numCol, p=0, l=0):
 
 	if(p == 1):
 		if(l == 1):
-			cols = "(col0 bigint PRIMARY KEY,"
+			cols = "(col0 blob PRIMARY KEY,"
 		else:
-			cols = "(col0 int PRIMARY KEY,"
+			cols = "(col0 blob PRIMARY KEY,"
 		for x in range(1, numCol):
 			cols += "col" + str(x) + " double precision,"
 	else:
