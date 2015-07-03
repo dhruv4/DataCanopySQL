@@ -219,14 +219,8 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			#mod = int(cur.fetchone()[0])
 			mod = 0
 
-			print(numCols)
-			banana = recToBinTrans([i], x, numCols, numChunks)
-			print("level 1:", banana)
-			#banana = int(banana, 2)
-			#print("level 1 bin:", banana)
-
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", 
-				[banana, avg, std,var,med,mod])
+				[recToBinTrans([i], x, numCols, numChunks), avg, std,var,med,mod])
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 
 	timing.append(time.time() - startTime)
@@ -256,7 +250,6 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
 	#3-n Levels
 	for i in range(3, levels+1):
-		print("level", i)
 		for c in range(numChunks):
 			for j in itertools.combinations(range(1, numCols + 1), i):
 				vals = []
