@@ -10,9 +10,6 @@ import pgTest, mdbTest
 
 def graph(x, t, xtitle, name, db):
 
-	print("plot stopped")
-	exit(0)
-
 	if not os.path.exists("pg"):
 		os.makedirs("pg")
 
@@ -126,7 +123,7 @@ def runExperiment():
 	for i in range(5, r+1):
 
 		numCols = 2**i
-		numCols = 30
+		numLevels = numCols
 		#numRows = 10**i
 		####^^CHANGE THIS TO CHANGE VARIABLE
 
