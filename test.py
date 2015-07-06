@@ -177,6 +177,8 @@ def runExperiment():
 			cur.execute("DROP TABLE dc_exp")
 			conn.commit()
 
+			print(j)
+
 		for x in timing:
 			timing[x] /= numTrials
 		times.append(timing)

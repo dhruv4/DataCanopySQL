@@ -188,8 +188,8 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	
 	timing.append(time.time() - startTime)
 	startTime = time.time()
-	
 	#level 2 DC
+	print("reached 2")
 
 	for i, j in itertools.combinations(range(1, numCols+1), 2):
 		for c in range(numChunks):
@@ -197,7 +197,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 				+ colList[i] + " as double precision) AS y FROM " 
 				+ table + " LIMIT " + str(sizeChunk) 
 				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
-			
+
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 				[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
 
@@ -205,6 +205,8 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	startTime = time.time()
 
 	#3-n Levels
+	print("reached 3")
+
 	for i in range(3, levels+1):
 		for c in range(numChunks):
 			for j in itertools.combinations(range(1, numCols + 1), i):
