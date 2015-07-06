@@ -119,9 +119,10 @@ def runExperiment():
 	r = int(math.ceil(math.log(numRows, 10)))
 	####^^CHANGE THIS TO CHANGE VARIABLE
 
-	for i in range(1, r+1):
+	for i in range(2, r+1):
 
 		#numCols = 2**i
+		#numCols = 8
 		numLevels = numCols
 		numRows = 10**i
 		####^^CHANGE THIS TO CHANGE VARIABLE

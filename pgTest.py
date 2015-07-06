@@ -197,6 +197,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 				+ colList[i] + " as double precision) AS y FROM " 
 				+ table + " LIMIT " + str(sizeChunk) 
 				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
+			
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 				[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
 

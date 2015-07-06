@@ -231,14 +231,14 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	#level 2
 	for i, j in itertools.combinations(range(1, numCols+1), 2):
 		for c in range(numChunks):
-			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (cl1 integer, cl2 integer) "
+			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (cl1 bigint, cl2 bigint) "
 			+ "BEGIN RETURN SELECT " + colList[i] + "," + colList[j] + " FROM " + table 
 			+ " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
+			
 			cur.execute("SELECT CORR(cl1, cl2) FROM GET_CHUNK()")
-			#banana = int(recToBinTrans([i, j], c, numCols, numChunks), 2)
-			banana = recToBinTrans([i, j], c, numCols, numChunks)
+
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-				[banana, cur.fetchone()[0]])
+				[recToBinTrans([i, j], c, numCols, numChunks), cur.fetchone()[0]])
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 
 	conn.commit()
@@ -325,7 +325,7 @@ def insertRandData(cur, conn, table, length):
 		exe = exe[:-2]
 		exe += ")"
 
-		cur.execute(exe, [random.randint(0, 5) for x in range(len(colList))])
+		cur.execute(exe, [random.randint(1, 5) for x in range(len(colList))])
 
 
 def getAllData(cur, conn, table):
