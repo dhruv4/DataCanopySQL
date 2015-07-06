@@ -47,14 +47,16 @@ def graph(x, t, xtitle, name, db):
 
 	print("x", x, "t", t, name)
 
-	plt.plot(x, t, 'bo')
+	plt.plot(x, t)
+	plt.xscale('log')
 
 	plt.title(xtitle + " vs Time (sec)")
 	plt.ylabel('Time (Sec)')
 	plt.xlabel(xtitle)
 	#plt.plot([[x[i], t[i]] for i in range(len(x))])
 	
-	plt.savefig(db + '/gp_' + name + '_' + db + '_' + xtitle + '.png')
+	plt.savefig(db + '/gp_' + name + '_' + db + '_' + xtitle + '.pdf')
+	plt.close()
 
 def Plot(filename,x_value,y_values,outfile):
 
@@ -117,12 +119,13 @@ def runExperiment():
 
 	#r = int(math.ceil(math.log(numCols, 2)))
 	r = int(math.ceil(math.log(numRows, 10)))
+	r=4
 	####^^CHANGE THIS TO CHANGE VARIABLE
 
 	for i in range(2, r+1):
 
 		#numCols = 2**i
-		#numCols = 8
+		numCols = 8
 		numLevels = numCols
 		numRows = 10**i
 		####^^CHANGE THIS TO CHANGE VARIABLE
