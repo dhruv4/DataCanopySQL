@@ -250,6 +250,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 
 	#3-n Levels
 	for i in range(3, levels+1):
+		print("reached", i)
 		for c in range(numChunks):
 			for j in itertools.combinations(range(1, numCols + 1), i):
 				vals = []

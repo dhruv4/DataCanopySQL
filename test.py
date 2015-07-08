@@ -117,17 +117,19 @@ def runExperiment():
 
 	#find which sys.arg is "x" and that one's gonna be the variable????????
 
-	#r = int(math.ceil(math.log(numCols, 2)))
-	r = int(math.ceil(math.log(numRows, 10)))
+	r = int(math.ceil(math.log(numCols, 2)))
+	#r = int(math.ceil(math.log(numRows, 10)))
 	####^^CHANGE THIS TO CHANGE VARIABLE
 
-	for i in range(2, r+1):
+	#for i in range(4, r+1):
+	for i in range(4, r+1):
+	#^^^^^^^CHANGE THIS TO CHANGE VAR
 
-		numLevels = numCols
-
-		#numCols = 2**i
-		numRows = 10**i
+		numCols = 2**i
+		#numRows = 10**i
 		####^^CHANGE THIS TO CHANGE VARIABLE
+		
+		numLevels = numCols
 
 		if(sys.argv[1] == "pg"):
 
@@ -183,10 +185,10 @@ def runExperiment():
 			timing[x] /= numTrials
 		times.append(timing)
 		
-		#vals.append(numCols)
-		#print("trial", numCols, "ran")
-		vals.append(numRows)
-		print("trial", numRows, "ran")
+		vals.append(numCols)
+		print("trial", numCols, "ran")
+		#vals.append(numRows)
+		#print("trial", numRows, "ran")
 		####^^CHANGE THESE TO CHANGE VARIABLE
 
 		cur.execute("DROP TABLE exp")

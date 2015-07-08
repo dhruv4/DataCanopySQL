@@ -1,0 +1,16 @@
+Performance counter stats for 'perflock python3 test.py mdb':
+
+      25213.409807      task-clock (msec)         #    0.175 CPUs utilized          
+           233,162      context-switches          #    0.009 M/sec                  
+                40      cpu-migrations            #    0.002 K/sec                  
+            65,572      page-faults               #    0.003 M/sec                  
+    59,325,071,439      cycles                    #    2.353 GHz                    
+    39,072,852,096      stalled-cycles-frontend   #   65.86% frontend cycles idle   
+   <not supported>      stalled-cycles-backend   
+    46,326,241,240      instructions              #    0.78  insns per cycle        
+                                                  #    0.84  stalled cycles per insn
+     9,831,988,864      branches                  #  389.951 M/sec                  
+       287,644,197      branch-misses             #    2.93% of all branches        
+
+     144.207863742 seconds time elapsed
+
