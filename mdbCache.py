@@ -246,6 +246,8 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	timing.append(time.time() - startTime)
 	startTime = time.time()
 
+	print("reached 3")
+
 	#3-n Levels
 	for i in range(3, levels+1):
 		print("reached", i)
@@ -269,6 +271,126 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 	timing.append(time.time() - startTime)
 
 	return timing
+
+def createDCTableSetup(table, levels, numChunks, numCols, numRows):
+
+	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
+	cur = conn.cursor()
+
+	if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
+		createTable(cur, conn, 'dc_' + table, 6, 1, 1)
+	else:
+		createTable(cur, conn, 'dc_' + table, 6, 1)
+
+	maxRows = (2**numCols - 1)*numChunks
+	sizeChunk = math.floor(numRows/numChunks)
+	#sizeChunk = math.ceil(numRows/numChunks)
+
+	cur.execute("SELECT * FROM " + table)
+	colList = [x[0] for x in  cur.description]
+
+	conn.commit()
+
+def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
+
+	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
+	cur = conn.cursor()
+
+	maxRows = (2**numCols - 1)*numChunks
+	sizeChunk = math.floor(numRows/numChunks)
+	#sizeChunk = math.ceil(numRows/numChunks)
+
+	cur.execute("SELECT * FROM " + table)
+	colList = [x[0] for x in  cur.description]
+
+	#level 1
+	for i in range(1, len(colList)):
+		for x in range(numChunks):
+
+			#cur.execute("CREATE FUNCTION GET_CHUNK(lim INT, off INT, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm integer)"
+			#	+" RETURN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
+			##^^This is the statement that SHOULD work but doesn't because monetdb doesn't recognize the variables like "col", "lim"
+			
+			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (clm integer) "
+				+"BEGIN RETURN SELECT " + colList[i] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
+			
+			#cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm), MEDIAN(clm) FROM GET_CHUNK()")
+
+			#removed median for consistency
+
+			cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm) FROM GET_CHUNK()")
+
+			#avg, std, var, med = cur.fetchone()
+			avg, std, var = cur.fetchone()
+
+			med = 0
+
+			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[i] + " ORDER BY COUNT( ) DESC")
+			#mod = int(cur.fetchone()[0])
+			mod = 0
+
+			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", 
+				[recToBinTrans([i], x, numCols, numChunks), avg, std,var,med,mod])
+			cur.execute("DROP FUNCTION GET_CHUNK()")
+
+	conn.commit()
+
+def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
+
+	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
+	cur = conn.cursor()
+
+	maxRows = (2**numCols - 1)*numChunks
+	sizeChunk = math.floor(numRows/numChunks)
+	#sizeChunk = math.ceil(numRows/numChunks)
+
+	cur.execute("SELECT * FROM " + table)
+	colList = [x[0] for x in  cur.description]
+
+	print("reached 2")
+
+	#level 2
+	for i, j in itertools.combinations(range(1, numCols+1), 2):
+		for c in range(numChunks):
+			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (cl1 bigint, cl2 bigint) "
+			+ "BEGIN RETURN SELECT " + colList[i] + "," + colList[j] + " FROM " + table 
+			+ " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
+			
+			cur.execute("SELECT CORR(cl1, cl2) FROM GET_CHUNK()")
+
+			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+				[recToBinTrans([i, j], c, numCols, numChunks), cur.fetchone()[0]])
+			cur.execute("DROP FUNCTION GET_CHUNK()")
+
+	conn.commit()
+
+def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
+
+	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
+	cur = conn.cursor()
+
+	#3-n Levels
+	for i in range(3, levels+1):
+		print("reached", i)
+		for c in range(numChunks):
+			for j in itertools.combinations(range(1, numCols + 1), i):
+				vals = []
+				for k in itertools.combinations(range(1, i), i-1):
+					banana = str(recToBinTrans(k, c, numCols, numChunks))
+					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
+					#	+ str(int(recToBinTrans(k, c, numCols, numChunks), 2)))
+						+ recToBinTrans(k, c, numCols, numChunks) + "'")
+					vals.append(cur.fetchone()[0])
+
+				correlation = sum(vals) + 42
+
+				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+				#	[str(int(recToBinTrans(j, c, numCols, numChunks), 2)), correlation])
+					[str(recToBinTrans(j, c, numCols, numChunks)), correlation])
+			conn.commit()
+ 
+	conn.commit()
+
 
 def createTable(cur, conn, name, numCol, p=0, l=0):
 
@@ -374,5 +496,16 @@ def test():
 
 	print(timing)
 
+def exp():
+	
+	if(sys.argv[1] == "setup"):
+		createDCTableSetup(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+	elif(sys.argv[1] == "level1"):
+		createDCTableLevel1(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+	elif(sys.argv[1] == "level2"):
+		createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+	elif(sys.argv[1] == "leveln"):
+		createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+
 #if __name__=="__main__": startTime = time.time(); main()
-if __name__=="__main__": startTime = time.time(); test()
+if __name__=="__main__": startTime = time.time(); exp()

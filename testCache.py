@@ -4,9 +4,22 @@ import psycopg2 as pg
 import monetdb.sql as mdb
 import time
 from numpy import *
-#import Gnuplot, Gnuplot.funcutils
+import Gnuplot, Gnuplot.funcutils
 import matplotlib.pyplot as plt
-import pgTest, mdbTest
+import pgCache, mdbCache
+
+'''
+1. create data table
+2. do setup
+3. level 1
+4. level 2
+5. level n
+6. graph
+CAN RUN TERMINAL IN PYTHON HOLY
+
+
+
+'''
 
 def graph(x, t, xtitle, name, db, ylog=0):
 
@@ -20,31 +33,7 @@ def graph(x, t, xtitle, name, db, ylog=0):
 	for i in range(len(x)):
 		f.write(str(x[i]) + ',' + str(t[i]) + '\n')
 	f.close()
-	'''
-	g = Gnuplot.Gnuplot()
-
-
-	outfile = db + '/gp_' + name + '_' + db + '_' + xtitle + '.ps'
-
-	g("set grid")
-	g("set key left")
-	g("set terminal pdf enhanced font 'times,12'")
-	g("set output '"+outfile+"'")
-	#g("set format y '%sx10^{%S}'")
-	g("set xlabel '"+xtitle+"'")
-	g("set format y '%1.2e'")
-
-	g.title(xtitle + " vs Time (sec)")
-	g('set style data lines')
-	g.ylabel('Time (Sec)')
-	g.xlabel(xtitle)
-
-	g.plot([[x[i], t[i]] for i in range(len(x))])
-
-	g.fit([[x[i], t[i]] for i in range(len(x))])
-
-	g.hardcopy(db + '/gp_' + name + '_' + db + '_' + xtitle + '.ps', enhanced=1, color=1)
-	'''
+	
 	print("x", x, "t", t, name)
 
 	if(name[4:]=="setup"):
@@ -62,16 +51,16 @@ def graph(x, t, xtitle, name, db, ylog=0):
 	if(xtitle == "Rows"):
 		plt.xscale('log')
 
-	plt.title(xtitle + " vs Time (sec)")
-	plt.ylabel('Time (Sec)')
+	plt.title(xtitle + " vs Cache Misses")
+	plt.ylabel('Cache Misses')
 	plt.tight_layout()
 	plt.xlabel(xtitle)
 	
 	if(ylog == 1):
 		plt.yscale('log')
-		plt.savefig(db + 'results/mpl_' + db + '_' + xtitle + 'log.pdf')
+		plt.savefig(db + 'results/mpl_' + db + '_cache_' + xtitle + 'log.pdf')
 	else:
-		plt.savefig(db + 'results/mpl_' + db + '_' + xtitle + '.pdf')
+		plt.savefig(db + 'results/mpl_' + db + '_cache_' + xtitle + '.pdf')
 
 def runExperiment():
 		
@@ -103,7 +92,8 @@ def runExperiment():
 	for i in range(4, r+1): #rows
 	#for i in range(2, r+1): #cols
 	#^^^^^^^CHANGE THIS TO CHANGE VAR
-
+		
+		#numChunks = 10**i
 		#numCols = 5*i
 		numRows = 10**i
 		####^^CHANGE THIS TO CHANGE VARIABLE
@@ -114,15 +104,15 @@ def runExperiment():
 
 			conn = pg.connect(dbname="postgres")
 			cur = conn.cursor()
-			pgTest.createTable(cur, conn, 'exp', numCols + 1)
-			pgTest.insertRandData(cur, conn, 'exp', numRows)
+			pgCache.createTable(cur, conn, 'exp', numCols + 1)
+			pgCache.insertRandData(cur, conn, 'exp', numRows)
 
 		elif(sys.argv[1] == "mdb"):
 
 			conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 			cur = conn.cursor()
-			mdbTest.createTable(cur, conn, 'exp', numCols + 1)
-			mdbTest.insertRandData(cur, conn, 'exp', numRows)
+			mdbCache.createTable(cur, conn, 'exp', numCols + 1)
+			mdbCache.insertRandData(cur, conn, 'exp', numRows)
 		
 		conn.commit()
 
@@ -135,26 +125,88 @@ def runExperiment():
 
 		for j in range(numTrials):
 
-			startTime = time.time()
-
 			if(sys.argv[1] == "pg"):
 
-				s, one, two, n = pgTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
+				os.system("rm -rf filename.txt")
+				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 
-				timing['setup'] += s
-				timing['level1'] += one
-				timing['level2'] += two
-				timing['leveln'] += n
+				lines = [line.rstrip('\n') for line in open('filename.txt')]
+
+				for line in lines:
+					if(line[-12:] == "cache-misses"):
+						timing['setup'] += int(line.split('-')[0])
+						break
+
+				lines.remove(line)
+
+				for line in lines:
+					if(line[-12:] == "cache-misses"):
+						timing['level1'] += int(line.split('-')[0])
+						break
+
+				lines.remove(line)
+
+				for line in lines:
+					if(line[-12:] == "cache-misses"):
+						timing['level2'] += int(line.split('-')[0])
+						break
+
+				lines.remove(line)
+
+				for line in lines:
+					if(line[-12:] == "cache-misses"):
+						timing['leveln'] += int(line.split('-')[0])
+						break
+
+				lines.remove(line)
 
 			elif(sys.argv[1] == "mdb"):
 
-				s, one, two, n = mdbTest.createDCTable(cur, conn, 'exp', numLevels, numChunks, numCols, numRows)
-				timing['setup'] += s
-				timing['level1'] += one
-				timing['level2'] += two
-				timing['leveln'] += n
-				
-			timing['total'] += time.time()-startTime
+				os.system("rm -rf filename.txt")
+				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+
+				lines = [line.rstrip('\n') for line in open('filename.txt')]
+
+				for line in lines:
+					if(line[-12:] == "cache-misses"):
+						timing['setup'] += int(line.split('-')[0])
+						break
+
+				lines.remove(line)
+
+				for line in lines:
+					if(line[-12:] == "cache-misses"):
+						timing['level1'] += int(line.split('-')[0])
+						break
+
+				lines.remove(line)
+
+				for line in lines:
+					if(line[-12:] == "cache-misses"):
+						timing['level2'] += int(line.split('-')[0])
+						break
+
+				lines.remove(line)
+
+				for line in lines:
+					if(line[-12:] == "cache-misses"):
+						timing['leveln'] += int(line.split('-')[0])
+						break
+
+				lines.remove(line)
+	
+			timing['total'] += timing['setup'] + timing['level1'] + timing['level2'] + timing['leveln']
+			#^SUM OF THE CACHE MISSES
+
+			cur.execute("SELECT * FROM dc_exp")
+			print(cur.fetchall())
+
 			cur.execute("DROP TABLE dc_exp")
 			conn.commit()
 
