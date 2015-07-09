@@ -63,12 +63,12 @@ def graph(x, t, xtitle, name, db, ylog=0):
 		plt.savefig(db + 'results/mpl_' + db + '_cache_' + xtitle + '.pdf')
 
 def runExperiment():
-		
-	#to combine everything into one file, maybe use a dictionary with 'pg' or 'mdb' as keys, leading to an array
-
+	
 	Config = configparser.ConfigParser()
+	################################################
 	Config.read("config.ini")
 	####^^CHANGE THE CONFIG FILE TO CHANGE VARIABLES
+	################################################
 
 	numTrials = Config.getint("Experiment Config", "NumberOfTrials")
 
@@ -81,22 +81,24 @@ def runExperiment():
 	times = []
 	vals = []
 
-	#find which sys.arg is "x" and that one's gonna be the variable????????
+	if(xaxis == "Chunks"):
+		r = int(math.ceil(math.log(numChunks, 10)))
+		a = 1
+	elif(xaxis = "Cols"):
+		r = numCols/5
+		a = 2
+	elif(xaxis == "Rows")
+		r = int(math.ceil(math.log(numRows, 10)))
+		a = 4
 
-	#r = int(math.ceil(math.log(numChunks, 10)))
-	#r = numCols/5
-	r = int(math.ceil(math.log(numRows, 10)))
-	####^^CHANGE THIS TO CHANGE VARIABLE
-
-	#for i in range(1, r+1): #chunks
-	for i in range(4, r+1): #rows
-	#for i in range(2, r+1): #cols
-	#^^^^^^^CHANGE THIS TO CHANGE VAR
+	for i in range(a, r+1):
 		
-		#numChunks = 10**i
-		#numCols = 5*i
-		numRows = 10**i
-		####^^CHANGE THIS TO CHANGE VARIABLE
+		if(xaxis == "Cols"):
+			numCols = 5*i
+		elif(xaxis == "Rows"):
+			numRows = 10**i
+		elif(xaxis == "Chunks"):
+			numChunks = 10**i
 		
 		numLevels = numCols
 
@@ -216,13 +218,15 @@ def runExperiment():
 			timing[x] /= numTrials
 		times.append(timing)
 		
-		#vals.append(numCols)
-		#print("trial", numCols, "ran")
-		vals.append(numRows)
-		print("trial", numRows, "ran")
-		#vals.append(numChunks)
-		#print("trial", numChunks, "ran")
-		####^^CHANGE THESE TO CHANGE VARIABLE
+		if(xaxis == "Cols"):
+			vals.append(numCols)
+			print("trial", numCols, "ran")
+		elif(xaxis == "Rows"):
+			vals.append(numRows)
+			print("trial", numRows, "ran")
+		elif(xaxis == "Chunks"):
+			vals.append(numChunks)
+			print("trial", numChunks, "ran")
 
 		cur.execute("DROP TABLE exp")
 		conn.commit()
