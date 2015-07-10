@@ -71,12 +71,15 @@ def runExperiment():
 	if(xaxis == "Chunks"):
 		r = int(math.ceil(math.log(numChunks, 10)))
 		a = 1
-	elif(xaxis = "Cols"):
+	elif(xaxis == "Cols"):
 		r = numCols/5
 		a = 2
-	elif(xaxis == "Rows")
+	elif(xaxis == "Rows"):
 		r = int(math.ceil(math.log(numRows, 10)))
 		a = 4
+
+	a = 2
+	#^^ for testing
 
 	for i in range(a, r+1):
 		
