@@ -8,19 +8,6 @@ import Gnuplot, Gnuplot.funcutils
 import matplotlib.pyplot as plt
 import pgCache, mdbCache
 
-'''
-1. create data table
-2. do setup
-3. level 1
-4. level 2
-5. level n
-6. graph
-CAN RUN TERMINAL IN PYTHON HOLY
-
-
-
-'''
-
 def graph(x, t, xtitle, name, db, ylog=0):
 
 	if not os.path.exists("pgresults"):
@@ -29,7 +16,7 @@ def graph(x, t, xtitle, name, db, ylog=0):
 	if not os.path.exists("mdbresults"):
 		os.makedirs("mdbresults")
 
-	f = open(db + 'results/' + name + '_' + db + '_' + xtitle +  '.txt', 'w')
+	f = open(db + 'results/' + name + '_' + db + '_cache_' + xtitle +  '.txt', 'w')
 	for i in range(len(x)):
 		f.write(str(x[i]) + ',' + str(t[i]) + '\n')
 	f.close()
