@@ -79,9 +79,6 @@ def runExperiment():
 		r = int(math.ceil(math.log(numRows, 10)))
 		a = 4
 
-	a = 2
-	#^^ for testing
-
 	for i in range(a, r+1):
 		
 		if(xaxis == "Cols"):
