@@ -1,22 +1,23 @@
-644097--cache-misses
-742178--cache-misses
+624158--cache-misses
+1422359--cache-misses
 reached 2
-Traceback (most recent call last):
-  File "mdbCache.py", line 511, in <module>
-    if __name__=="__main__": startTime = time.time(); exp()
-  File "mdbCache.py", line 506, in exp
-    createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
-  File "mdbCache.py", line 357, in createDCTableLevel2
-    + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
-NameError: global name 'x' is not defined
-679435--cache-misses
+3946026--cache-misses
 reached 3
-Traceback (most recent call last):
-  File "mdbCache.py", line 511, in <module>
-    if __name__=="__main__": startTime = time.time(); exp()
-  File "mdbCache.py", line 508, in exp
-    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
-  File "mdbCache.py", line 383, in createDCTableLeveln
-    vals.append(cur.fetchone()[0])
-TypeError: 'NoneType' object is not subscriptable
-661755--cache-misses
+reached 4
+reached 5
+reached 6
+reached 7
+reached 8
+reached 9
+reached 10
+reached 11
+reached 12
+reached 13
+reached 14
+reached 15
+reached 16
+reached 17
+reached 18
+reached 19
+reached 20
+5309718--cache-misses
