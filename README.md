@@ -45,5 +45,5 @@ Run program as python3 test.py [database - pg or mdb]
 
 Run program as python3 test.py [database - pg or mdb]
 
-Dhruv Gupta - [Harvard SEAS DASLab](daslab.seas.harvard.edu) - [dgupta@g.harvard.edu](dgupta@g.harvard.edu)
+Dhruv Gupta - [Harvard SEAS DASLab](//daslab.seas.harvard.edu) - [dgupta@g.harvard.edu](mailto:dgupta@g.harvard.edu)
      
