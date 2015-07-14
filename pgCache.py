@@ -306,18 +306,20 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
 	#3-n Levels
 	for i in range(3, levels+1):
 		print("reached", i)
-		for c in range(numChunks):
-			for j in itertools.combinations(range(1, numCols + 1), i):
+		comb = list(itertools.combinations(range(1, numCols + 1), i))
+		for cval in range(numChunks):
+			for j in comb:
 				vals = []
-				for k in itertools.combinations(range(1, i), i-1):
+				comb2 = list(itertools.combinations(j, i-1))
+				for k in comb2:
 					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0 = cast('" 
-						+ recToBinTrans(k, c, numCols, numChunks) + "' as varbit)")
+						+ recToBinTrans(k, cval, numCols, numChunks) + "' as varbit)")
 					vals.append(cur.fetchone()[0])				
 
 				correlation = sum(vals) + 42
 
 				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-					[recToBinTrans(j, c, numCols, numChunks), correlation])
+					[recToBinTrans(j, cval, numCols, numChunks), correlation])
 
 def createTable(cur, conn, name, numCol, b=0):
 

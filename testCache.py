@@ -119,8 +119,11 @@ def runExperiment():
 
 				os.system("rm -rf filename.txt")
 				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				print("reached 1")
 				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				print("reached 2")
 				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				print("reached n")
 				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 
 				lines = [line.rstrip('\n') for line in open('filename.txt')]
@@ -157,8 +160,11 @@ def runExperiment():
 
 				os.system("rm -rf filename.txt")
 				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				print("reached 1")
 				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				print("reached 2")
 				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				print("reached n")
 				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 
 				lines = [line.rstrip('\n') for line in open('filename.txt')]

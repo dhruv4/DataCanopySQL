@@ -76,8 +76,10 @@ def graph(x, t, xtitle, name, db, ylog=0):
 def runExperiment():
 	
 	Config = configparser.ConfigParser()
-	Config.read("config.ini")
+	################################################
+	Config.read("test.ini")
 	####^^CHANGE THE CONFIG FILE TO CHANGE VARIABLES
+	################################################
 
 	numTrials = Config.getint("Experiment Config", "NumberOfTrials")
 

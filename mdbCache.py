@@ -219,8 +219,12 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			#mod = int(cur.fetchone()[0])
 			mod = 0
 
-			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", 
-				[recToBinTrans([i], x, numCols, numChunks), avg, std,var,med,mod])
+			if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
+				cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", 
+					[recToBinTrans([i], x, numCols, numChunks), avg, std,var,med,mod])
+			else:
+				cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", 
+					[int(recToBinTrans([i], x, numCols, numChunks), 2), avg, std,var,med,mod])
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 
 	timing.append(time.time() - startTime)
@@ -236,9 +240,13 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 			+ " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
 			
 			cur.execute("SELECT CORR(cl1, cl2) FROM GET_CHUNK()")
-
-			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-				[recToBinTrans([i, j], c, numCols, numChunks), cur.fetchone()[0]])
+			
+			if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
+				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+					[recToBinTrans([i, j], c, numCols, numChunks), cur.fetchone()[0]])
+			else:
+				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+					[int(recToBinTrans([i, j], c, numCols, numChunks), 2), cur.fetchone()[0]])
 			cur.execute("DROP FUNCTION GET_CHUNK()")
 
 	conn.commit()
@@ -256,16 +264,25 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 				vals = []
 				for k in itertools.combinations(range(1, i), i-1):
 					banana = str(recToBinTrans(k, c, numCols, numChunks))
-					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
-					#	+ str(int(recToBinTrans(k, c, numCols, numChunks), 2)))
-						+ recToBinTrans(k, c, numCols, numChunks) + "'")
+					if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):	
+						cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
+							+ str(recToBinTrans(k, c, numCols, numChunks)) + "'")
+					else:
+						cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
+							+ str(int(recToBinTrans(k, c, numCols, numChunks), 2)) + "'")
 					vals.append(cur.fetchone()[0])
 
 				correlation = sum(vals) + 42
 
-				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-				#	[str(int(recToBinTrans(j, c, numCols, numChunks), 2)), correlation])
-					[str(recToBinTrans(j, c, numCols, numChunks)), correlation])
+
+				if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
+					cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+					#	[str(int(recToBinTrans(j, c, numCols, numChunks), 2)), correlation])
+						[str(recToBinTrans(j, c, numCols, numChunks)), correlation])
+				else:
+					cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+						[int(recToBinTrans(j, c, numCols, numChunks), 2), correlation])
+
 			conn.commit()
  
 	timing.append(time.time() - startTime)
@@ -365,30 +382,35 @@ def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 	conn.commit()
 
 def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
-
-	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
-	cur = conn.cursor()
-
-	#3-n Levels
+ 	
 	for i in range(3, levels+1):
 		print("reached", i)
+		comb = list(itertools.combinations(range(1, numCols + 1), i))
 		for c in range(numChunks):
-			for j in itertools.combinations(range(1, numCols + 1), i):
+			for j in comb: #create combinations of cols
 				vals = []
-				for k in itertools.combinations(range(1, i), i-1):
+				comb2 = list(itertools.combinations(j, i-1))
+				for k in comb2:
 					banana = str(recToBinTrans(k, c, numCols, numChunks))
-					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
-					#	+ str(int(recToBinTrans(k, c, numCols, numChunks), 2)))
-						+ recToBinTrans(k, c, numCols, numChunks) + "'")
+					if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
+						cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
+							+ recToBinTrans(k, c, numCols, numChunks) + "'")
+					else:
+						cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
+							+ str(int(recToBinTrans(k, c, numCols, numChunks), 2)) + "'")
+
 					vals.append(cur.fetchone()[0])
 
 				correlation = sum(vals) + 42
 
-				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-				#	[str(int(recToBinTrans(j, c, numCols, numChunks), 2)), correlation])
-					[str(recToBinTrans(j, c, numCols, numChunks)), correlation])
+				if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
+					cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+						[str(recToBinTrans(j, c, numCols, numChunks)), correlation])
+				else:
+					cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+						[str(int(recToBinTrans(j, c, numCols, numChunks), 2)), correlation])
 			conn.commit()
- 
+
 	conn.commit()
 
 

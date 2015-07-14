@@ -1,23 +1,58 @@
-624158--cache-misses
-1422359--cache-misses
+sh: 1: perf: not found
+sh: 1: perf: not found
+sh: 1: perf: not found
+sh: 1: perf: not found
 reached 2
-3946026--cache-misses
+Traceback (most recent call last):
+  File "mdbCache.py", line 533, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "mdbCache.py", line 528, in exp
+    createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "mdbCache.py", line 374, in createDCTableLevel2
+    + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
+NameError: name 'x' is not defined
 reached 3
-reached 4
-reached 5
-reached 6
-reached 7
-reached 8
-reached 9
-reached 10
-reached 11
-reached 12
-reached 13
-reached 14
-reached 15
-reached 16
-reached 17
-reached 18
-reached 19
-reached 20
-5309718--cache-misses
+Traceback (most recent call last):
+  File "mdbCache.py", line 533, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "mdbCache.py", line 530, in exp
+    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "mdbCache.py", line 399, in createDCTableLeveln
+    cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
+NameError: name 'cur' is not defined
+reached 2
+Traceback (most recent call last):
+  File "mdbCache.py", line 533, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "mdbCache.py", line 528, in exp
+    createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "mdbCache.py", line 374, in createDCTableLevel2
+    + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
+NameError: name 'x' is not defined
+reached 3
+Traceback (most recent call last):
+  File "mdbCache.py", line 533, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "mdbCache.py", line 530, in exp
+    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "mdbCache.py", line 399, in createDCTableLeveln
+    cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
+NameError: name 'cur' is not defined
+reached 2
+Traceback (most recent call last):
+  File "mdbCache.py", line 533, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "mdbCache.py", line 528, in exp
+    createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "mdbCache.py", line 374, in createDCTableLevel2
+    + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
+NameError: name 'x' is not defined
+reached 3
+Traceback (most recent call last):
+  File "mdbCache.py", line 533, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "mdbCache.py", line 530, in exp
+    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "mdbCache.py", line 399, in createDCTableLeveln
+    cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
+NameError: name 'cur' is not defined
