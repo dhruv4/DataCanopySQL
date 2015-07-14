@@ -33,5 +33,17 @@ Updated: 6/26/15
      * Assumes first column is used for identification
      * Use `createdc YOUR_TABLE_NAME`
 
-Dhruv Gupta - [Harvard SEAS DASLab](daslab.seas.harvard.edu)
+##Experiment Instructions
+
+Edit Config.ini to change the information about the tests such as variable values and which variable to vary.
+
+###Time Tests
+
+Run program as python3 test.py [database - pg or mdb]
+
+###Cache Tests
+
+Run program as python3 test.py [database - pg or mdb]
+
+Dhruv Gupta - [Harvard SEAS DASLab](http://daslab.seas.harvard.edu) - [dgupta@g.harvard.edu](mailto:dgupta@g.harvard.edu)
      
