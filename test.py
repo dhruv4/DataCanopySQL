@@ -77,7 +77,7 @@ def runExperiment():
 	
 	Config = configparser.ConfigParser()
 	################################################
-	Config.read("test.ini")
+	Config.read("config.ini")
 	####^^CHANGE THE CONFIG FILE TO CHANGE VARIABLES
 	################################################
 
