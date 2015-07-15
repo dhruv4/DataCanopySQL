@@ -200,9 +200,9 @@ def runExperiment():
 			timing['total'] += timing['setup'] + timing['level1'] + timing['level2'] + timing['leveln']
 			#^SUM OF THE CACHE MISSES
 
-			cur.execute("SELECT * FROM dc_exp")
-			print(cur.fetchall())
-
+			cur.execute("SELECT COUNT(*) FROM dc_exp")
+			print("Size of Data Canopy: ", cur.fetchone()[0])
+			print("Predicted Size of DC: ", numChunks*(2**k -1))
 			cur.execute("DROP TABLE dc_exp")
 			conn.commit()
 

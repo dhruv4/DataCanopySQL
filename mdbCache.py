@@ -391,7 +391,6 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
 				vals = []
 				comb2 = list(itertools.combinations(j, i-1))
 				for k in comb2:
-					banana = str(recToBinTrans(k, c, numCols, numChunks))
 					if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
 						cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
 							+ recToBinTrans(k, c, numCols, numChunks) + "'")

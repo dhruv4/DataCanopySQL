@@ -172,7 +172,7 @@ def createDCLevels(cur, conn, table, levels, numChunks, numCols, numRows):
 
 			conn.commit()
 
-def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
+def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows, two = 0):
 
 	timing = []
 
@@ -263,9 +263,11 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows):
 		for c in range(numChunks):
 			for j in comb: #create combinations of cols
 				vals = []
-				comb2 = list(itertools.combinations(j, i-1))
+				if(two == 1):
+					comb2 = list(itertools.combinations(j, 2))
+				else:
+					comb2 = list(itertools.combinations(j, i-1))
 				for k in comb2:
-					banana = str(recToBinTrans(k, c, numCols, numChunks))
 					if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
 						cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
 							+ recToBinTrans(k, c, numCols, numChunks) + "'")
@@ -389,7 +391,7 @@ def test():
 	createTable(cur, conn, "test", numCols + 1)
 	insertRandData(cur, conn, "test", numRows)
 	conn.commit()
-	timing = createDCTable(cur, conn, "test", numCols, numChunks, numCols, numRows)
+	timing = createDCTable(cur, conn, "test", numCols, numChunks, numCols, numRows, 0)
 
 	print(timing)
 
