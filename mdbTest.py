@@ -237,7 +237,7 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows, two = 0
 		for c in range(numChunks):
 			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (cl1 bigint, cl2 bigint) "
 			+ "BEGIN RETURN SELECT " + colList[i] + "," + colList[j] + " FROM " + table 
-			+ " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
+			+ " LIMIT " + str(sizeChunk) + " OFFSET " + str(c*sizeChunk) + "; END;")
 			
 			cur.execute("SELECT CORR(cl1, cl2) FROM GET_CHUNK()")
 
