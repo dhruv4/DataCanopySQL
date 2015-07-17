@@ -227,9 +227,8 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
 	for i in range(3, levels+1):
 		print("reached", i)
 		comb = list(itertools.combinations(range(1, numCols + 1), i))
-		for cval in range(numChunks):
-			for j in comb:
-				for cval in range(numChunks):
+		for j in comb:
+			for cval in range(numChunks):
 				vals = []
 				if(two == 1):
 					comb2 = list(itertools.combinations(j, 2))
