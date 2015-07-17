@@ -52,10 +52,17 @@ def graph(x, t, xtitle, name, db, c=0, ylog=0):
 	plt.xlabel(xtitle)
 	
 	if(ylog == 1):
-		plt.yscale('log')
-		plt.savefig(db + 'results/mpl_' + db + '_cache_' + xtitle + 'log.pdf')
+		if(c == 1):
+			plt.yscale('log')
+			plt.savefig(db + 'results/mpl_' + db + '_cache_' + xtitle + 'log.pdf')
+		else:
+			plt.yscale('log')
+			plt.savefig(db + 'results/mpl_' + db + '_time_' + xtitle + 'log.pdf')
 	else:
-		plt.savefig(db + 'results/mpl_' + db + '_cache_' + xtitle + '.pdf')
+		if(c == 1):
+			plt.savefig(db + 'results/mpl_' + db + '_cache_' + xtitle + '.pdf')
+		else:
+			plt.savefig(db + 'results/mpl_' + db + '_time_' + xtitle + '.pdf')
 
 def runExperiment():
 	
