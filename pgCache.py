@@ -227,10 +227,10 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
 	for i in range(3, levels+1):
 		print("reached", i)
 		comb = list(itertools.combinations(range(1, numCols + 1), i))
-		for cval in range(numChunks):
-			for j in comb:
+		for j in comb:
+			comb2 = list(itertools.combinations(j, i-1))
+			for cval in range(numChunks):
 				vals = []
-				comb2 = list(itertools.combinations(j, i-1))
 				for k in comb2:
 					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0 = cast('" 
 						+ recToBinTrans(k, cval, numCols, numChunks) + "' as varbit)")

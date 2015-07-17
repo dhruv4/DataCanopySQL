@@ -8,7 +8,7 @@ import Gnuplot, Gnuplot.funcutils
 import matplotlib.pyplot as plt
 import pgCache, mdbCache
 
-def graph(x, t, xtitle, name, db, ylog=0):
+def graph(x, t, xtitle, name, db, c=0, ylog=0):
 
 	if not os.path.exists("pgresults"):
 		os.makedirs("pgresults")
@@ -16,7 +16,11 @@ def graph(x, t, xtitle, name, db, ylog=0):
 	if not os.path.exists("mdbresults"):
 		os.makedirs("mdbresults")
 
-	f = open(db + 'results/' + name + '_' + db + '_cache_' + xtitle +  '.txt', 'w')
+	if(c == 1):
+		f = open(db + 'results/' + name + '_' + db + '_cache_' + xtitle +  '.txt', 'w')
+	else:
+		f = open(db + 'results/' + name + '_' + db + '_time_' + xtitle +  '.txt', 'w')
+
 	for i in range(len(x)):
 		f.write(str(x[i]) + ',' + str(t[i]) + '\n')
 	f.close()
@@ -38,8 +42,12 @@ def graph(x, t, xtitle, name, db, ylog=0):
 	if(xtitle == "Rows"):
 		plt.xscale('log')
 
-	plt.title(xtitle + " vs Cache Misses")
-	plt.ylabel('Cache Misses')
+	if(c == 1):	
+		plt.title(xtitle + " vs Cache Misses")
+		plt.ylabel('Cache Misses')
+	else:
+		plt.title(xtitle + " vs Time (sec)")
+		plt.ylabel('Time (Sec)')
 	plt.tight_layout()
 	plt.xlabel(xtitle)
 	
@@ -67,6 +75,7 @@ def runExperiment():
 	xaxis = Config.get("Experiment Config", "XAxis")
 
 	times = []
+	caches = []
 	vals = []
 
 	if(xaxis == "Chunks"):
@@ -112,46 +121,65 @@ def runExperiment():
 		timing['level2'] = 0
 		timing['leveln'] = 0
 		timing['total'] = 0
+		caching = {}
+		caching['setup'] = 0
+		caching['level1'] = 0
+		caching['level2'] = 0
+		caching['leveln'] = 0
+		caching['total'] = 0
 
 		for j in range(numTrials):
 
 			if(sys.argv[1] == "pg"):
 
 				os.system("rm -rf filename.txt")
+
+				totalStart = time.time()
+
+				startTime = time.time()
 				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				timing['setup'] += time.time() - startTime
 				print("reached 1")
+				startTime = time.time()
 				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				timing['level1'] += time.time() - startTime
 				print("reached 2")
+				startTime = time.time()
 				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				timing['level2'] += time.time() - startTime
 				print("reached n")
+				startTime = time.time()
 				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				timing['leveln'] += time.time() - startTime
+
+				timing['total'] += time.time() - totalStart
 
 				lines = [line.rstrip('\n') for line in open('filename.txt')]
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
-						timing['setup'] += int(line.split('-')[0])
+						caching['setup'] += int(line.split('-')[0])
 						break
 
 				lines.remove(line)
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
-						timing['level1'] += int(line.split('-')[0])
+						caching['level1'] += int(line.split('-')[0])
 						break
 
 				lines.remove(line)
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
-						timing['level2'] += int(line.split('-')[0])
+						caching['level2'] += int(line.split('-')[0])
 						break
 
 				lines.remove(line)
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
-						timing['leveln'] += int(line.split('-')[0])
+						caching['leveln'] += int(line.split('-')[0])
 						break
 
 				lines.remove(line)
@@ -159,45 +187,59 @@ def runExperiment():
 			elif(sys.argv[1] == "mdb"):
 
 				os.system("rm -rf filename.txt")
+
+				totalStart = time.time()
+
+				startTime = time.time()
+
 				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				timing['setup'] += time.time() - startTime
 				print("reached 1")
+				startTime = time.time()
 				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				timing['level1'] += time.time() - startTime
 				print("reached 2")
+				startTime = time.time()
 				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				timing['level2'] += time.time() - startTime
 				print("reached n")
+				startTime = time.time()
 				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				timing['leveln'] += time.time() - startTime
+
+				timing['total'] += time.time() - totalStart
 
 				lines = [line.rstrip('\n') for line in open('filename.txt')]
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
-						timing['setup'] += int(line.split('-')[0])
+						caching['setup'] += int(line.split('-')[0])
 						break
 
 				lines.remove(line)
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
-						timing['level1'] += int(line.split('-')[0])
+						caching['level1'] += int(line.split('-')[0])
 						break
 
 				lines.remove(line)
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
-						timing['level2'] += int(line.split('-')[0])
+						caching['level2'] += int(line.split('-')[0])
 						break
 
 				lines.remove(line)
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
-						timing['leveln'] += int(line.split('-')[0])
+						caching['leveln'] += int(line.split('-')[0])
 						break
 
 				lines.remove(line)
 	
-			timing['total'] += timing['setup'] + timing['level1'] + timing['level2'] + timing['leveln']
+			caching['total'] += caching['setup'] + caching['level1'] + caching['level2'] + caching['leveln']
 			#^SUM OF THE CACHE MISSES
 
 			cur.execute("SELECT COUNT(*) FROM dc_exp")
@@ -207,6 +249,10 @@ def runExperiment():
 			conn.commit()
 
 			print(j)
+
+		for x in caching:
+			caching[x] /= numTrials
+		caches.append(caching)
 
 		for x in timing:
 			timing[x] /= numTrials
@@ -228,19 +274,32 @@ def runExperiment():
 		conn.close()
 
 	print("vals", vals)
-	print("times", times)
+	print("caches", caches)
 	
-	for j in timing:
+	for j in caching:
 
-		graph(vals, [k[j] for k in times], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title") + j, sys.argv[1])
+		graph(vals, [k[j] for k in caches], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title") + j, sys.argv[1], 1)
 
+	plt.close()
+
+	for j in caching:
+
+		graph(vals, [k[j] for k in caches], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title") + j, sys.argv[1], 1, 1)
+	
 	plt.close()
 
 	for j in timing:
 
 		graph(vals, [k[j] for k in times], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title") + j, sys.argv[1], 1)
+
+	plt.close()
+
+	for j in timing:
+
+		graph(vals, [k[j] for k in times], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title") + j, sys.argv[1], 1, 1)
 	
 	plt.close()
+
 		
 def runAccessExperiment():
 
