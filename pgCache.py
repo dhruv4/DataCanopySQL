@@ -218,7 +218,7 @@ def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 
 	conn.commit()
 
-def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
+def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
 
 	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
@@ -230,7 +230,10 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
 		for cval in range(numChunks):
 			for j in comb:
 				vals = []
-				comb2 = list(itertools.combinations(j, i-1))
+				if(two == 1):
+					comb2 = list(itertools.combinations(j, 2))
+				else:
+					comb2 = list(itertools.combinations(j, i-1))
 				for k in comb2:
 					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0 = cast('" 
 						+ recToBinTrans(k, cval, numCols, numChunks) + "' as varbit)")
