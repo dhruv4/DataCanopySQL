@@ -1,58 +1,39 @@
-sh: 1: perf: not found
-sh: 1: perf: not found
-sh: 1: perf: not found
-sh: 1: perf: not found
+Traceback (most recent call last):
+  File "pgCache.py", line 356, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgCache.py", line 346, in exp
+    createDCTableSetup(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgCache.py", line 158, in createDCTableSetup
+    createTable(cur, conn, 'dc_' + table, 6, 1)
+  File "pgCache.py", line 260, in createTable
+    cur.execute("CREATE TABLE " + name + " " + cols)
+psycopg2.ProgrammingError: relation "dc_exp" already exists
+
+604729--cache-misses
+Traceback (most recent call last):
+  File "pgCache.py", line 356, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgCache.py", line 348, in exp
+    createDCTableLevel1(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgCache.py", line 190, in createDCTableLevel1
+    [recToBinTrans([j], x, numCols, numChunks), avg, stddev,var,med,mod])
+psycopg2.IntegrityError: duplicate key value violates unique constraint "dc_exp_pkey"
+DETAIL:  Key (col0)=(0100000000) already exists.
+
+587846--cache-misses
 reached 2
 Traceback (most recent call last):
-  File "mdbCache.py", line 533, in <module>
+  File "pgCache.py", line 356, in <module>
     if __name__=="__main__": startTime = time.time(); exp()
-  File "mdbCache.py", line 528, in exp
+  File "pgCache.py", line 350, in exp
     createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
-  File "mdbCache.py", line 374, in createDCTableLevel2
-    + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
-NameError: name 'x' is not defined
+  File "pgCache.py", line 217, in createDCTableLevel2
+    [recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
+psycopg2.IntegrityError: duplicate key value violates unique constraint "dc_exp_pkey"
+DETAIL:  Key (col0)=(0110000000) already exists.
+
+557898--cache-misses
 reached 3
-Traceback (most recent call last):
-  File "mdbCache.py", line 533, in <module>
-    if __name__=="__main__": startTime = time.time(); exp()
-  File "mdbCache.py", line 530, in exp
-    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
-  File "mdbCache.py", line 399, in createDCTableLeveln
-    cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
-NameError: name 'cur' is not defined
-reached 2
-Traceback (most recent call last):
-  File "mdbCache.py", line 533, in <module>
-    if __name__=="__main__": startTime = time.time(); exp()
-  File "mdbCache.py", line 528, in exp
-    createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
-  File "mdbCache.py", line 374, in createDCTableLevel2
-    + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
-NameError: name 'x' is not defined
-reached 3
-Traceback (most recent call last):
-  File "mdbCache.py", line 533, in <module>
-    if __name__=="__main__": startTime = time.time(); exp()
-  File "mdbCache.py", line 530, in exp
-    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
-  File "mdbCache.py", line 399, in createDCTableLeveln
-    cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
-NameError: name 'cur' is not defined
-reached 2
-Traceback (most recent call last):
-  File "mdbCache.py", line 533, in <module>
-    if __name__=="__main__": startTime = time.time(); exp()
-  File "mdbCache.py", line 528, in exp
-    createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
-  File "mdbCache.py", line 374, in createDCTableLevel2
-    + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
-NameError: name 'x' is not defined
-reached 3
-Traceback (most recent call last):
-  File "mdbCache.py", line 533, in <module>
-    if __name__=="__main__": startTime = time.time(); exp()
-  File "mdbCache.py", line 530, in exp
-    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
-  File "mdbCache.py", line 399, in createDCTableLeveln
-    cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
-NameError: name 'cur' is not defined
+reached 4
+reached 5
+553660--cache-misses
