@@ -275,6 +275,7 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
 		print("reached", i)
 		comb = list(itertools.combinations(range(1, numCols + 1), i))
 		for j in comb: #create combinations of cols
+			##SWITCHED j AND c - MAYBE ITS FASTER?
 			comb2 = list(itertools.combinations(j, i-1))
 			for c in range(numChunks):
 				vals = []
