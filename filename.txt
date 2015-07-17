@@ -1,8 +1,8 @@
-602236--cache-misses
-553808--cache-misses
+598892--cache-misses
+591635--cache-misses
 reached 2
-599318--cache-misses
+598736--cache-misses
 reached 3
 reached 4
 reached 5
-590586--cache-misses
+602710--cache-misses
