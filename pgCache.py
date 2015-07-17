@@ -243,6 +243,7 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
 
 				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 					[recToBinTrans(j, cval, numCols, numChunks), correlation])
+	conn.commit()
 
 def createTable(cur, conn, name, numCol, b=0):
 
