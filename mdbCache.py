@@ -266,7 +266,7 @@ def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 
 	conn.commit()
 
-def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
+def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two=0):
  	
 	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
@@ -275,9 +275,12 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
 		print("reached", i)
 		comb = list(itertools.combinations(range(1, numCols + 1), i))
 		for c in range(numChunks):
+			if(two == 1):
+				comb2 = list(itertools.combinations(j, 2))
+			else:
+				comb2 = list(itertools.combinations(j, i-1))
 			for j in comb: #create combinations of cols
 				vals = []
-				comb2 = list(itertools.combinations(j, i-1))
 				for k in comb2:
 					if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
 						cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 

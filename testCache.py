@@ -104,7 +104,7 @@ def runExperiment():
 		elif(xaxis == "Chunks"):
 			numChunks = 10**i
 		
-		numLevels = numCols
+		#numLevels = numCols
 
 		if(sys.argv[1] == "pg"):
 

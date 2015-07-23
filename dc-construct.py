@@ -213,12 +213,12 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, db, two = 0)
 	for i in range(3, levels+1):
 		print("reached", i)
 		comb = list(itertools.combinations(range(1, numCols + 1), i))
-		for j in comb:
+		for cval in range(numChunks):
 			if(two == 1):
 				comb2 = list(itertools.combinations(j, 2))
 			else:
 				comb2 = list(itertools.combinations(j, i-1))
-			for cval in range(numChunks):
+			for j in comb:
 				vals = []
 				for k in comb2:
 					
