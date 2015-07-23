@@ -155,8 +155,10 @@ def runExperiment():
 				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['level2'] += time.time() - startTime
 				print("reached n")
+				print("numLevels", numLevels)
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				if(numLevels > 2):
+					os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['leveln'] += time.time() - startTime
 
 				timing['total'] += time.time() - totalStart
@@ -209,9 +211,10 @@ def runExperiment():
 				startTime = time.time()
 				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['level2'] += time.time() - startTime
-				print("reached n")
+				print("numLevels", numLevels)
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				if(numLevels > 2):
+					os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['leveln'] += time.time() - startTime
 
 				timing['total'] += time.time() - totalStart
