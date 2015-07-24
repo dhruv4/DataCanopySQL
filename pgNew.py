@@ -1,12 +1,12 @@
 #pgNew.py
 
 def checkLevel1(x):
-	while (((x & 1) == 0) && x > 1) #While x is even and > 1
+	while (((x & 1) == 0) and x > 1) #While x is even and > 1
    		x >>= 1
  	return (x == 1)
 
 def checkLevel2(x):
-	while (((x & 1) == 0) && x > 1) #While x is even and > 1
+	while (((x & 1) == 0) and x > 1) #While x is even and > 1
    		x >>= 1;
  	return (x == 2);
 
