@@ -123,7 +123,7 @@ def runExperiment():
 			cur = conn.cursor()
 			mdbCache.createTable(cur, conn, 'exp', numCols + 1)
 			#mdbCache.insertRandData(cur, conn, 'exp', numRows)
-			cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".csv' DELIMITER ',' CSV")
+			cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".csv' USING DELIMITERS ',' CSV")
 			#cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".npy'")
 		
 		conn.commit()
