@@ -113,7 +113,7 @@ def runExperiment():
 			pgCache.createTable(cur, conn, 'exp', numCols + 1)
 			#pgCache.insertRandData(cur, conn, 'exp', numRows)
 			#cur.execute("COPY exp FROM 'test" + str(numRows) + ".csv' DELIMITER ',' CSV")
-			cur.execute("COPY exp FROM 'test" + str(numRows) + "WITH BINARY")
+			cur.execute("COPY exp FROM 'test" + str(numRows) + " WITH BINARY")
 
 		elif(sys.argv[1] == "mdb"):
 
@@ -122,7 +122,7 @@ def runExperiment():
 			mdbCache.createTable(cur, conn, 'exp', numCols + 1)
 			#mdbCache.insertRandData(cur, conn, 'exp', numRows)
 			#cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".csv' DELIMITER ',' CSV")
-			cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".npy' ")
+			cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".npy'")
 		
 		conn.commit()
 
