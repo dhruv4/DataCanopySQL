@@ -6,7 +6,7 @@ import time
 from numpy import *
 import Gnuplot, Gnuplot.funcutils
 import matplotlib.pyplot as plt
-import pgCache, mdbCache
+import pgNew, mdbCache
 
 def graph(x, t, xtitle, name, db, c=0, ylog=0):
 
@@ -112,8 +112,8 @@ def runExperiment():
 
 			conn = pg.connect(dbname="postgres")
 			cur = conn.cursor()
-			pgCache.createTable(cur, conn, 'exp', numCols + 1)
-			#pgCache.insertRandData(cur, conn, 'exp', numRows)
+			pgNew.createTable(cur, conn, 'exp', numCols + 1)
+			#pgNew.insertRandData(cur, conn, 'exp', numRows)
 			cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 			#cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".npy' WITH BINARY")
 
@@ -152,21 +152,21 @@ def runExperiment():
 				totalStart = time.time()
 
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['setup'] += time.time() - startTime
 				print("reached 1")
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['level1'] += time.time() - startTime
 				print("reached 2")
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['level2'] += time.time() - startTime
 				print("reached n")
 				print("numLevels", numLevels)
 				startTime = time.time()
 				if(numLevels > 2):
-					os.system("perf stat -e 'cache-misses' -x- python3 pgCache.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+					os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['leveln'] += time.time() - startTime
 
 				timing['total'] += time.time() - totalStart

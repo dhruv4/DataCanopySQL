@@ -170,8 +170,7 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 	colList = ["col" for x in range(numCols)]
 
 	maxRows = (2**numCols - 1)*numChunks
-	#sizeChunk = math.ceil(numRows/numChunks)
-	sizeChunk = math.floor(numRows/numChunks)
+	sizeChunk = math.ceil(numRows/numChunks)
 
 	#level 1 Postgres
 	for j in range(1, numCols+1):
@@ -269,8 +268,11 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
 			chunkBin = "0" + chunkBin
 
 	return colBin + chunkBin
-
+'''
 def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
+
+	conn = pg.connect(dbname="postgres")
+	cur = conn.cursor()
 
 	binLen = math.ceil(numCols + math.log(numChunks, 2))
 	chunkBinLen = math.ceil(math.log(numChunks, 2))
@@ -285,7 +287,7 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
 			for x in range(chunkBinLen - lcb):
 				chunkBin = "0" + chunkBin
 
-		for j in range(2**numCols - 1):
+		for j in range(2**numCols):
 
 			jbin = bin(j)[2:]
 			jlen = len(jbin)
@@ -308,7 +310,7 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
 			#conv chunk to bin and conv j
 
 			continue
-'''
+
 def createTable(cur, conn, name, numCol, b=0):
 
 	if(b == 1):
