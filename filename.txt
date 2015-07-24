@@ -1,23 +1,22 @@
-591627--cache-misses
-1404564--cache-misses
+602883--cache-misses
+Traceback (most recent call last):
+  File "pgCache.py", line 360, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgCache.py", line 352, in exp
+    createDCTableLevel1(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgCache.py", line 181, in createDCTableLevel1
+    + " OFFSET " + str(x*sizeChunk) + ") as foo")
+  File "<string>", line 12, in __new__
+KeyboardInterrupt
+625193--cache-misses
 reached 2
-3663399--cache-misses
-reached 3
-reached 4
-reached 5
-reached 6
-reached 7
-reached 8
-reached 9
-reached 10
-reached 11
-reached 12
-reached 13
-reached 14
-reached 15
-reached 16
-reached 17
-reached 18
-reached 19
-reached 20
-18708216--cache-misses
+Traceback (most recent call last):
+  File "pgCache.py", line 360, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgCache.py", line 354, in exp
+    createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgCache.py", line 214, in createDCTableLevel2
+    + " OFFSET " + str(c*sizeChunk) + ") as foo")
+  File "<string>", line 12, in __new__
+KeyboardInterrupt
+642290--cache-misses
