@@ -128,11 +128,7 @@ def runExperiment():
 		
 		conn.commit()
 
-		print(startTime - time.time())
-		cur.execute("DROP TABLE exp")
-		print("dropped")
-		conn.commit()
-		continue
+		print("Table loaded", time.time() - startTime)
 
 		timing = {}
 		timing['setup'] = 0

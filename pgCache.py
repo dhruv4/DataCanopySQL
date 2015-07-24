@@ -213,6 +213,8 @@ def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 				+ table + " LIMIT " + str(sizeChunk) 
 				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
 
+			####^^^^ This HAS to be the slowest statement right?
+
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 				[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
 
