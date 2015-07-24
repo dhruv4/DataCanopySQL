@@ -112,7 +112,7 @@ def runExperiment():
 
 			conn = pg.connect(dbname="postgres")
 			cur = conn.cursor()
-			pgCache.createTable(cur, conn, 'exp', numCols + 1)
+			#pgCache.createTable(cur, conn, 'exp', numCols + 1)
 			#pgCache.insertRandData(cur, conn, 'exp', numRows)
 			cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 			#cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".npy' WITH BINARY")
@@ -121,14 +121,19 @@ def runExperiment():
 
 			conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 			cur = conn.cursor()
-			mdbCache.createTable(cur, conn, 'exp', numCols + 1)
+			#mdbCache.createTable(cur, conn, 'exp', numCols + 1)
 			#mdbCache.insertRandData(cur, conn, 'exp', numRows)
 			cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 			#cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".npy'")
 		
+
+
 		conn.commit()
 
 		print(startTime - time.time())
+		cur.execute("DROP TABLE exp")
+		print("dropped")
+		conn.commit()
 		continue
 
 		timing = {}
