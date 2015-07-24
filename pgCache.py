@@ -164,8 +164,10 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
 
-	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
-	colList = [x[0] for x in cur.fetchall()]
+	#cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
+	#colList = [x[0] for x in cur.fetchall()]
+
+	colList = ["col" for x in range(numCols)]
 
 	maxRows = (2**numCols - 1)*numChunks
 	#sizeChunk = math.ceil(numRows/numChunks)
@@ -175,19 +177,20 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 	for j in range(1, numCols+1):
 		for x in range(numChunks):
 
-			cur.execute("SELECT AVG(ss), STDDEV(ss), VAR_SAMP(ss) FROM (SELECT " 
-				+ colList[j] + " AS ss FROM " 
-				+ table + " LIMIT " + str(sizeChunk) 
-				+ " OFFSET " + str(x*sizeChunk) + ") as foo")
+			#cur.execute("SELECT AVG(ss), STDDEV(ss), VAR_SAMP(ss) FROM (SELECT " 
+			#	+ colList[j] + " AS ss FROM " 
+			#	+ table + " LIMIT " + str(sizeChunk) 
+			#	+ " OFFSET " + str(x*sizeChunk) + ") as foo")
+			
 			avg, stddev, var = cur.fetchone()
 
-			med = 0 #median????
+			med = 0 #median
 
 			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[j] + " ORDER BY COUNT( ) DESC")
 			#mod = int(cur.fetchone()[0])
 			mod = 0
-			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
-				[recToBinTrans([j], x, numCols, numChunks), avg, stddev,var,med,mod])
+			#cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
+			#	[recToBinTrans([j], x, numCols, numChunks), avg, stddev,var,med,mod])
 
 	conn.commit()
 	
@@ -196,8 +199,10 @@ def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
 
-	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
-	colList = [x[0] for x in cur.fetchall()]
+	#cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
+	#colList = [x[0] for x in cur.fetchall()]
+
+	colList = ["col" for x in range(numCols)]
 
 	maxRows = (2**numCols - 1)*numChunks
 	#sizeChunk = math.ceil(numRows/numChunks)
@@ -208,15 +213,15 @@ def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 
 	for i, j in itertools.combinations(range(1, numCols+1), 2):
 		for c in range(numChunks):
-			cur.execute("SELECT CORR(x, y) FROM (SELECT cast(" + colList[j] + " as double precision) AS x, cast(" 
-				+ colList[i] + " as double precision) AS y FROM " 
-				+ table + " LIMIT " + str(sizeChunk) 
-				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
+			#cur.execute("SELECT CORR(x, y) FROM (SELECT cast(" + colList[j] + " as double precision) AS x, cast(" 
+			#	+ colList[i] + " as double precision) AS y FROM " 
+			#	+ table + " LIMIT " + str(sizeChunk) 
+			#	+ " OFFSET " + str(c*sizeChunk) + ") as foo")
 
 			####^^^^ This HAS to be the slowest statement right?
 
-			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-				[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
+			#cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+			#	[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
 
 	conn.commit()
 
@@ -237,16 +242,73 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
 			for cval in range(numChunks):
 				vals = []
 				for k in comb2:
-					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0 = cast('" 
-						+ recToBinTrans(k, cval, numCols, numChunks) + "' as varbit)")
-					vals.append(cur.fetchone()[0])				
+					#cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0 = cast('" 
+					#	+ recToBinTrans(k, cval, numCols, numChunks) + "' as varbit)")
+					#vals.append(cur.fetchone()[0])		
+					vals.append(3)		
 
 				correlation = sum(vals) + 42
 
-				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-					[recToBinTrans(j, cval, numCols, numChunks), correlation])
+				#cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+				#	[recToBinTrans(j, cval, numCols, numChunks), correlation])
 		conn.commit()
+'''
 
+	colBin = ""
+
+	for x in range(numCols + 1):
+		if(x in col):
+			colBin += '1'
+		else:
+			colBin += '0'
+
+	chunkBin = bin(chunk)[2:]
+	if(len(chunkBin) < chunkBinLen):
+		lcb = len(chunkBin)
+		for x in range(chunkBinLen - lcb):
+			chunkBin = "0" + chunkBin
+
+	return colBin + chunkBin
+
+def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
+
+	binLen = math.ceil(numCols + math.log(numChunks, 2))
+	chunkBinLen = math.ceil(math.log(numChunks, 2))
+
+	#for i in range(numChunks * (2**numCols - 1)):
+
+	for i in range(numChunks):
+
+		chunkBin = bin(i)[2:]
+		if(len(chunkBin) < chunkBinLen):
+			lcb = len(chunkBin)
+			for x in range(chunkBinLen - lcb):
+				chunkBin = "0" + chunkBin
+
+		for j in range(2**numCols - 1):
+
+			jbin = bin(j)[2:]
+			jlen = len(jbin)
+			for x in range(numCols - jlen):
+				jbin = "0" + jbin
+
+			if(jbin.count('1') < 3):
+				continue
+
+			##HOW TO KNOW WHERE TO GET STUFF?????
+
+			correlation = sum(vals) + 42
+
+			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+				[recToBinTrans(j, cval, numCols, numChunks), correlation])
+
+			#convert j to binary and make it long enough
+			#if in level 1 or 2: continue (use str.count() to see if 1 or 2 '1s')
+			#execute stuff  - take from level 2
+			#conv chunk to bin and conv j
+
+			continue
+'''
 def createTable(cur, conn, name, numCol, b=0):
 
 	if(b == 1):
