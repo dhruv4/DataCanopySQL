@@ -1,6 +1,7 @@
+#mdbNew.py
 #pgNew.py
 import sys, random, math, itertools
-import psycopg2 as pg
+import monetdb.sql as mdb
 import time
 from numpy import *
 
@@ -35,12 +36,29 @@ def createTable(cur, conn, name, numCol, b=0):
 
 	cur.execute("CREATE TABLE " + name + " " + cols)
 
+def createTable(cur, conn, name, numCol, p=0):
+
+	if(p == 1):
+		cols = "(col0 bigint PRIMARY KEY,"
+		for x in range(1, numCol):
+			cols += "col" + str(x) + " double precision,"
+	else:
+		cols = "("
+		for x in range(numCol):
+			cols += "col" + str(x) + " int,"
+
+	cols = cols[:-1]
+
+	cols += ")"
+
+	cur.execute("CREATE TABLE " + name + " " + cols)
+
 def idChunkCombine(idn, chunk, numChunks):
 	return ((idn << math.ceil(math.log(numChunks, 2))) | chunk)
 
 def createDCTableSetup(table, levels, numChunks, numCols, numRows):
 	
-	conn = pg.connect(dbname="postgres")
+	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
 
 	createTable(cur, conn, 'dc_' + table, 6, 1)
@@ -49,11 +67,11 @@ def createDCTableSetup(table, levels, numChunks, numCols, numRows):
 
 def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 
-	conn = pg.connect(dbname="postgres")
+	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
 
-	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'")
-	colList = [x[0] for x in cur.fetchall()]
+	cur.execute("SELECT * FROM " + table)
+	colList = [x[0] for x in  cur.description]
 
 	maxRows = (2**numCols - 1)*numChunks
 	sizeChunk = math.ceil(numRows/numChunks)
@@ -62,16 +80,25 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 	for c in range(numChunks):
 		for i in range(numCols):
 
-			cur.execute("SELECT AVG(ss), STDDEV(ss), VAR_SAMP(ss) FROM (SELECT " 
-				+ colList[i] + " AS ss FROM " 
-				+ table + " LIMIT " + str(sizeChunk) 
-				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
+			#cur.execute("CREATE FUNCTION GET_CHUNK(lim INT, off INT, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm integer)"
+			#	+" RETURN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
+			##^^This is the statement that SHOULD work but doesn't because monetdb doesn't recognize the variables like "col", "lim"
 			
-			avg, stddev, var = cur.fetchone()
+			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (clm integer) "
+				+"BEGIN RETURN SELECT " + colList[i] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(c*sizeChunk) + "; END;")
+			
+			#cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm), MEDIAN(clm) FROM GET_CHUNK()")
 
-			med = 0 #median
+			#removed median for consistency
 
-			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[j] + " ORDER BY COUNT( ) DESC")
+			cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm) FROM GET_CHUNK()")
+
+			#avg, std, var, med = cur.fetchone()
+			avg, std, var = cur.fetchone()
+
+			med = 0
+
+			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[i] + " ORDER BY COUNT( ) DESC")
 			#mod = int(cur.fetchone()[0])
 			mod = 0
 
@@ -82,15 +109,17 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
 				[ID, avg, std,var,med,mod])
 
+			cur.execute("DROP FUNCTION GET_CHUNK()")
+
 	conn.commit()
 
 def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 	
-	conn = pg.connect(dbname="postgres")
+	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
 
-	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'")
-	colList = [x[0] for x in cur.fetchall()]
+	cur.execute("SELECT * FROM " + table)
+	colList = [x[0] for x in  cur.description]
 
 	maxRows = (2**numCols - 1)*numChunks
 	sizeChunk = math.ceil(numRows/numChunks)
@@ -98,21 +127,23 @@ def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 	for c in range(numChunks):
 		for i in range(numCols - 1):
 			for j in range(i+1, numCols):
-				cur.execute("SELECT CORR(x, y) FROM (SELECT cast(" + colList[i] + " as double precision) AS x, cast(" 
-					+ colList[j] + " as double precision) AS y FROM " 
-					+ table + " LIMIT " + str(sizeChunk) 
-					+ " OFFSET " + str(c*sizeChunk) + ") as foo")
 
-				####^^^^ This HAS to be the slowest statement right?
+				cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (cl1 bigint, cl2 bigint) "
+					+ "BEGIN RETURN SELECT " + colList[i] + "," + colList[j] + " FROM " + table 
+					+ " LIMIT " + str(sizeChunk) + " OFFSET " + str(c*sizeChunk) + "; END;")
+				
+				cur.execute("SELECT CORR(cl1, cl2) FROM GET_CHUNK()")
 
 				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 					[idChunkCombine(2**i + 2**j, c, numChunks),float(cur.fetchone()[0])])
+
+				cur.execute("DROP FUNCTION GET_CHUNK()")
 
 	conn.commit()
 
 def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
 
-	conn = pg.connect(dbname="postgres")
+	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
 
 	for c in range(numChunks):
@@ -140,8 +171,8 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
 
 def insertRandData(cur, conn, table, length):
 
-	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'")
-	colList = [x[0] for x in cur.fetchall()]
+	cur.execute("SELECT * FROM " + table)
+	colList = [x[0] for x in  cur.description]
 
 	for x in range(int(length)):
 		exe = "INSERT INTO " + table + " ("
@@ -158,14 +189,14 @@ def insertRandData(cur, conn, table, length):
 		exe = exe[:-2]
 		exe += ")"
 
-		cur.execute(exe, [random.randint(0, 5) for x in range(len(colList))])
+		cur.execute(exe, [random.randint(1, 5) for x in range(len(colList))])
 
 def test():
 	numChunks = 10
 	numCols = 15
 	numRows = 10000
 
-	conn = pg.connect(dbname="postgres")
+	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
 
 	print(checkLevel2(9))

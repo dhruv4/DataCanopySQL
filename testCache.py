@@ -113,8 +113,8 @@ def runExperiment():
 			conn = pg.connect(dbname="postgres")
 			cur = conn.cursor()
 			pgNew.createTable(cur, conn, 'exp', numCols + 1)
-			#pgNew.insertRandData(cur, conn, 'exp', numRows)
-			cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
+			pgNew.insertRandData(cur, conn, 'exp', numRows)
+			#cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 			#cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".npy' WITH BINARY")
 
 		elif(sys.argv[1] == "mdb"):
@@ -122,8 +122,8 @@ def runExperiment():
 			conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 			cur = conn.cursor()
 			mdbCache.createTable(cur, conn, 'exp', numCols + 1)
-			#mdbCache.insertRandData(cur, conn, 'exp', numRows)
-			cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' USING DELIMITERS ','")
+			mdbCache.insertRandData(cur, conn, 'exp', numRows)
+			#cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' USING DELIMITERS ','")
 			#cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".npy'")
 		
 		conn.commit()
@@ -150,7 +150,7 @@ def runExperiment():
 				os.system("rm -rf filename.txt")
 
 				totalStart = time.time()
-
+				'''
 				startTime = time.time()
 				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['setup'] += time.time() - startTime
@@ -168,6 +168,25 @@ def runExperiment():
 				if(numLevels > 2):
 					os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['leveln'] += time.time() - startTime
+				'''
+				startTime = time.time()
+				os.system("python3 pgNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				timing['setup'] += time.time() - startTime
+				print("reached 1")
+				startTime = time.time()
+				os.system("python3 pgNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				timing['level1'] += time.time() - startTime
+				print("reached 2")
+				startTime = time.time()
+				os.system("python3 pgNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				timing['level2'] += time.time() - startTime
+				print("reached n")
+				print("numLevels", numLevels)
+				startTime = time.time()
+				if(numLevels > 2):
+					os.system("python3 pgNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				timing['leveln'] += time.time() - startTime
+
 
 				timing['total'] += time.time() - totalStart
 
@@ -263,7 +282,7 @@ def runExperiment():
 			cur.execute("SELECT COUNT(*) FROM dc_exp")
 			print("Size of Data Canopy: ", cur.fetchone()[0])
 			print("Predicted Size of DC: ", numChunks*(2**numCols - 1))
-			cur.execute("DROP TABLE dc_exp")
+			#cur.execute("DROP TABLE dc_exp")
 			conn.commit()
 
 			print(j)

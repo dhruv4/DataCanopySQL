@@ -227,8 +227,6 @@ def createDCTable(cur, conn, table, levels, numChunks, numCols, numRows, two = 0
 
 	timing.append(time.time() - startTime)
 
-
-
 	return timing
 
 def createTable(cur, conn, name, numCol, b=0):
