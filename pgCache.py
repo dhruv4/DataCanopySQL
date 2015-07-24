@@ -20,7 +20,7 @@ def recToBinTrans(col, chunk, numCols, numChunks):
 
 	#input list of columns relevant, chunk number
 	binLen = math.ceil(numCols + math.log(numChunks, 2))
-	chunkBinLen = math.ceil(math.log(numChunks, 2))
+	chunkBinLen = int(math.floor(math.log(numChunks, 2)))
 
 	colBin = ""
 
@@ -164,22 +164,21 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
 
-	#cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
-	#colList = [x[0] for x in cur.fetchall()]
-
-	colList = ["col" for x in range(numCols)]
+	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
+	colList = [x[0] for x in cur.fetchall()]
 
 	maxRows = (2**numCols - 1)*numChunks
-	sizeChunk = math.ceil(numRows/numChunks)
+	#sizeChunk = math.ceil(numRows/numChunks)
+	sizeChunk = math.floor(numRows/numChunks)
 
 	#level 1 Postgres
 	for j in range(1, numCols+1):
 		for x in range(numChunks):
 
-			#cur.execute("SELECT AVG(ss), STDDEV(ss), VAR_SAMP(ss) FROM (SELECT " 
-			#	+ colList[j] + " AS ss FROM " 
-			#	+ table + " LIMIT " + str(sizeChunk) 
-			#	+ " OFFSET " + str(x*sizeChunk) + ") as foo")
+			cur.execute("SELECT AVG(ss), STDDEV(ss), VAR_SAMP(ss) FROM (SELECT " 
+				+ colList[j] + " AS ss FROM " 
+				+ table + " LIMIT " + str(sizeChunk) 
+				+ " OFFSET " + str(x*sizeChunk) + ") as foo")
 			
 			avg, stddev, var = cur.fetchone()
 
@@ -188,8 +187,8 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[j] + " ORDER BY COUNT( ) DESC")
 			#mod = int(cur.fetchone()[0])
 			mod = 0
-			#cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
-			#	[recToBinTrans([j], x, numCols, numChunks), avg, stddev,var,med,mod])
+			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
+				[recToBinTrans([j], x, numCols, numChunks), avg, stddev,var,med,mod])
 
 	conn.commit()
 	
@@ -198,10 +197,8 @@ def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
 
-	#cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
-	#colList = [x[0] for x in cur.fetchall()]
-
-	colList = ["col" for x in range(numCols)]
+	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
+	colList = [x[0] for x in cur.fetchall()]
 
 	maxRows = (2**numCols - 1)*numChunks
 	#sizeChunk = math.ceil(numRows/numChunks)
@@ -212,15 +209,15 @@ def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 
 	for i, j in itertools.combinations(range(1, numCols+1), 2):
 		for c in range(numChunks):
-			#cur.execute("SELECT CORR(x, y) FROM (SELECT cast(" + colList[j] + " as double precision) AS x, cast(" 
-			#	+ colList[i] + " as double precision) AS y FROM " 
-			#	+ table + " LIMIT " + str(sizeChunk) 
-			#	+ " OFFSET " + str(c*sizeChunk) + ") as foo")
+			cur.execute("SELECT CORR(x, y) FROM (SELECT cast(" + colList[j] + " as double precision) AS x, cast(" 
+				+ colList[i] + " as double precision) AS y FROM " 
+				+ table + " LIMIT " + str(sizeChunk) 
+				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
 
 			####^^^^ This HAS to be the slowest statement right?
 
-			#cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-			#	[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
+			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+				[recToBinTrans([i, j], c, numCols, numChunks),float(cur.fetchone()[0])])
 
 	conn.commit()
 
@@ -231,7 +228,7 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
 
 	#3-n Levels
 	for i in range(3, levels+1):
-		print("reached", i)
+		#print("reached", i)
 		comb = list(itertools.combinations(range(1, numCols + 1), i))
 		for j in comb:
 			if(two == 1):
@@ -241,15 +238,15 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
 			for cval in range(numChunks):
 				vals = []
 				for k in comb2:
-					#cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0 = cast('" 
-					#	+ recToBinTrans(k, cval, numCols, numChunks) + "' as varbit)")
-					#vals.append(cur.fetchone()[0])		
+					cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0 = cast('" 
+						+ recToBinTrans(k, cval, numCols, numChunks) + "' as varbit)")
+					vals.append(cur.fetchone()[0])		
 					vals.append(3)		
 
 				correlation = sum(vals) + 42
 
-				#cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-				#	[recToBinTrans(j, cval, numCols, numChunks), correlation])
+				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+					[recToBinTrans(j, cval, numCols, numChunks), correlation])
 		conn.commit()
 '''
 
@@ -268,7 +265,7 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
 			chunkBin = "0" + chunkBin
 
 	return colBin + chunkBin
-'''
+
 def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
 
 	conn = pg.connect(dbname="postgres")
@@ -310,7 +307,7 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two = 0):
 			#conv chunk to bin and conv j
 
 			continue
-
+'''
 def createTable(cur, conn, name, numCol, b=0):
 
 	if(b == 1):
@@ -398,17 +395,31 @@ def main():
 	print("Run time: ", time.time() - startTime, " seconds")
 
 def test():
-	numChunks = 5
-	numCols = 5
-	numRows = 100
+	numChunks = 10
+	numCols = 15
+	numRows = 10000
 
 	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
-	
-	timing = createDCTable(cur, conn, "test", numCols, numChunks, numCols, numRows)
+
+	#print(checkLevel2(9))
+
+
+	createTable(cur, conn, "test", numCols + 1)
+	insertRandData(cur, conn, "test", numRows)
+	conn.commit()
+
+	createDCTableSetup("test", numCols, numChunks, numCols, numRows)
+	print("setup done")
+	createDCTableLevel1("test", numCols, numChunks, numCols, numRows)
+	print("level 1 made")
+	createDCTableLevel2("test", numCols, numChunks, numCols, numRows)
+	print("level 2 made")
+	createDCTableLeveln("test", numCols, numChunks, numCols, numRows)
+	print("done")
 
 	conn.commit()
-	print(timing)
+	print(time.time() - startTime)
 
 def exp():
 	
@@ -422,5 +433,5 @@ def exp():
 		createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
 
 #if __name__=="__main__": startTime = time.time(); main()
-#if __name__=="__main__": startTime = time.time(); test()
-if __name__=="__main__": startTime = time.time(); exp()
+if __name__=="__main__": startTime = time.time(); test()
+#if __name__=="__main__": startTime = time.time(); exp()

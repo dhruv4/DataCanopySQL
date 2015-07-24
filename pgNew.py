@@ -67,7 +67,7 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 				+ table + " LIMIT " + str(sizeChunk) 
 				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
 			
-			avg, stddev, var = cur.fetchone()
+			avg, std, var = cur.fetchone()
 
 			med = 0 #median
 
@@ -171,7 +171,7 @@ def test():
 	print(checkLevel2(9))
 
 
-	createTable(cur, conn, "test", numCols)
+	createTable(cur, conn, "test", numCols + 1)
 	insertRandData(cur, conn, "test", numRows)
 	conn.commit()
 
