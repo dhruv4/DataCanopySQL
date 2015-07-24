@@ -111,16 +111,21 @@ def runExperiment():
 			conn = pg.connect(dbname="postgres")
 			cur = conn.cursor()
 			pgCache.createTable(cur, conn, 'exp', numCols + 1)
-			pgCache.insertRandData(cur, conn, 'exp', numRows)
+			#pgCache.insertRandData(cur, conn, 'exp', numRows)
+			cur.execute("COPY exp FROM 'test" + numRows + ".csv' DELIMITER ',' CSV")
 
 		elif(sys.argv[1] == "mdb"):
 
 			conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 			cur = conn.cursor()
 			mdbCache.createTable(cur, conn, 'exp', numCols + 1)
-			mdbCache.insertRandData(cur, conn, 'exp', numRows)
+			#mdbCache.insertRandData(cur, conn, 'exp', numRows)
+			cur.execute("COPY INTO exp FROM 'test" + numRows + ".csv' DELIMITER ',' CSV")
+
 		
 		conn.commit()
+
+		exit(0)
 
 		timing = {}
 		timing['setup'] = 0
