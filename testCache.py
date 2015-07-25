@@ -6,7 +6,7 @@ import time
 from numpy import *
 import Gnuplot, Gnuplot.funcutils
 import matplotlib.pyplot as plt
-import pgNew, mdbCache
+import pgNew, mdbNew
 
 def graph(x, t, xtitle, name, db, c=0, ylog=0):
 
@@ -113,17 +113,17 @@ def runExperiment():
 			conn = pg.connect(dbname="postgres")
 			cur = conn.cursor()
 			pgNew.createTable(cur, conn, 'exp', numCols + 1)
-			pgNew.insertRandData(cur, conn, 'exp', numRows)
-			#cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
+			#pgNew.insertRandData(cur, conn, 'exp', numRows)
+			cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 			#cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".npy' WITH BINARY")
 
 		elif(sys.argv[1] == "mdb"):
 
 			conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 			cur = conn.cursor()
-			mdbCache.createTable(cur, conn, 'exp', numCols + 1)
-			mdbCache.insertRandData(cur, conn, 'exp', numRows)
-			#cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' USING DELIMITERS ','")
+			mdbNew.createTable(cur, conn, 'exp', numCols + 1)
+			#mdbNew.insertRandData(cur, conn, 'exp', numRows)
+			cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' USING DELIMITERS ','")
 			#cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".npy'")
 		
 		conn.commit()
@@ -150,7 +150,7 @@ def runExperiment():
 				os.system("rm -rf filename.txt")
 
 				totalStart = time.time()
-				'''
+				
 				startTime = time.time()
 				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['setup'] += time.time() - startTime
@@ -186,7 +186,7 @@ def runExperiment():
 				if(numLevels > 2):
 					os.system("python3 pgNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['leveln'] += time.time() - startTime
-
+				'''
 
 				timing['total'] += time.time() - totalStart
 
@@ -228,20 +228,20 @@ def runExperiment():
 
 				startTime = time.time()
 
-				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['setup'] += time.time() - startTime
 				print("reached 1")
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['level1'] += time.time() - startTime
 				print("reached 2")
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['level2'] += time.time() - startTime
 				print("numLevels", numLevels)
 				startTime = time.time()
 				if(numLevels > 2):
-					os.system("perf stat -e 'cache-misses' -x- python3 mdbCache.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+					os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
 				timing['leveln'] += time.time() - startTime
 
 				timing['total'] += time.time() - totalStart
