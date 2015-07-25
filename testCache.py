@@ -147,7 +147,7 @@ def runExperiment():
 
 			if(sys.argv[1] == "pg"):
 
-				os.system("rm -rf filename.txt")
+				os.system("rm -rf filenamepg.txt")
 
 				totalStart = time.time()
 				
@@ -190,7 +190,7 @@ def runExperiment():
 
 				timing['total'] += time.time() - totalStart
 
-				lines = [line.rstrip('\n') for line in open('filename.txt')]
+				lines = [line.rstrip('\n') for line in open('filenamepg.txt')]
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
@@ -222,7 +222,7 @@ def runExperiment():
 
 			elif(sys.argv[1] == "mdb"):
 
-				os.system("rm -rf filename.txt")
+				os.system("rm -rf filenamemdb.txt")
 
 				totalStart = time.time()
 
@@ -246,7 +246,7 @@ def runExperiment():
 
 				timing['total'] += time.time() - totalStart
 
-				lines = [line.rstrip('\n') for line in open('filename.txt')]
+				lines = [line.rstrip('\n') for line in open('filenamemdb.txt')]
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
