@@ -190,7 +190,7 @@ def runExperiment():
 
 				timing['total'] += time.time() - totalStart
 
-				lines = [line.rstrip('\n') for line in open('filenamepg.txt')]
+				lines = [line.rstrip('\n') for line in open('filenamepg.txt', 'w')]
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
@@ -246,7 +246,7 @@ def runExperiment():
 
 				timing['total'] += time.time() - totalStart
 
-				lines = [line.rstrip('\n') for line in open('filenamemdb.txt')]
+				lines = [line.rstrip('\n') for line in open('filenamemdb.txt', 'w')]
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
