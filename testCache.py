@@ -90,7 +90,7 @@ def runExperiment():
 		a = 1
 	elif(xaxis == "Cols"):
 		r = numCols/5
-		a = 2
+		a = 1
 	elif(xaxis == "Rows"):
 		r = int(math.ceil(math.log(numRows, 10)))
 		a = 4
