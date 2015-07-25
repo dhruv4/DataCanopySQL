@@ -1,3 +1,116 @@
-633040--cache-misses
-865335--cache-misses
-1714539--cache-misses
+603088--cache-misses
+1098237--cache-misses
+Traceback (most recent call last):
+  File "pgNew.py", line 201, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgNew.py", line 197, in exp
+    createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgNew.py", line 104, in createDCTableLevel2
+    + " OFFSET " + str(c*sizeChunk) + ") as foo")
+  File "<string>", line 12, in __new__
+KeyboardInterrupt
+2070414--cache-misses
+Traceback (most recent call last):
+  File "pgNew.py", line 201, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgNew.py", line 199, in exp
+    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgNew.py", line 137, in createDCTableLeveln
+    [idChunkCombine(i, c, numChunks), correlation])
+KeyboardInterrupt
+608233--cache-misses
+654374--cache-misses
+938182--cache-misses
+581164--cache-misses
+601723--cache-misses
+556355--cache-misses
+944889--cache-misses
+2206427--cache-misses
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.2/dist-packages/numpy/core/fromnumeric.py", line 1716, in sum
+    sum = a.sum
+AttributeError: 'list' object has no attribute 'sum'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "mdbNew.py", line 232, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "mdbNew.py", line 230, in exp
+    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "mdbNew.py", line 165, in createDCTableLeveln
+    correlation = sum(vals) + 42
+  File "/usr/local/lib/python3.2/dist-packages/numpy/core/fromnumeric.py", line 1719, in sum
+    out=out, keepdims=keepdims)
+  File "/usr/local/lib/python3.2/dist-packages/numpy/core/_methods.py", line 32, in _sum
+    return umr_sum(a, axis, dtype, out, keepdims)
+KeyboardInterrupt
+1250504--cache-misses
+591175--cache-misses
+594004--cache-misses
+582373--cache-misses
+Traceback (most recent call last):
+  File "pgNew.py", line 201, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgNew.py", line 199, in exp
+    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgNew.py", line 137, in createDCTableLeveln
+    [idChunkCombine(i, c, numChunks), correlation])
+KeyboardInterrupt
+925931--cache-misses
+600878--cache-misses
+548678--cache-misses
+Traceback (most recent call last):
+  File "pgNew.py", line 201, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgNew.py", line 197, in exp
+    createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgNew.py", line 104, in createDCTableLevel2
+    + " OFFSET " + str(c*sizeChunk) + ") as foo")
+  File "<string>", line 12, in __new__
+KeyboardInterrupt
+604142--cache-misses
+Traceback (most recent call last):
+  File "pgNew.py", line 201, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgNew.py", line 199, in exp
+    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgNew.py", line 137, in createDCTableLeveln
+    [idChunkCombine(i, c, numChunks), correlation])
+KeyboardInterrupt
+949658--cache-misses
+605752--cache-misses
+558617--cache-misses
+Traceback (most recent call last):
+  File "pgNew.py", line 201, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgNew.py", line 197, in exp
+    createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgNew.py", line 104, in createDCTableLevel2
+    + " OFFSET " + str(c*sizeChunk) + ") as foo")
+  File "<string>", line 12, in __new__
+KeyboardInterrupt
+567298--cache-misses
+Traceback (most recent call last):
+  File "pgNew.py", line 201, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgNew.py", line 199, in exp
+    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgNew.py", line 137, in createDCTableLeveln
+    [idChunkCombine(i, c, numChunks), correlation])
+KeyboardInterrupt
+578037--cache-misses
+595842--cache-misses
+562243--cache-misses
+598277--cache-misses
+Traceback (most recent call last):
+  File "pgNew.py", line 5, in <module>
+    from numpy import *
+  File "/usr/local/lib/python3.2/dist-packages/numpy/__init__.py", line 190, in <module>
+    from . import ctypeslib
+  File "/usr/local/lib/python3.2/dist-packages/numpy/ctypeslib.py", line 62, in <module>
+    import ctypes
+  File "/usr/lib/python3.2/ctypes/__init__.py", line 376, in <module>
+    class PyDLL(CDLL):
+KeyboardInterrupt
+477593--cache-misses
