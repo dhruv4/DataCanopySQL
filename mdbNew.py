@@ -229,8 +229,8 @@ def exp():
 	elif(sys.argv[1] == "leveln"):
 		createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
 
-#if __name__=="__main__": startTime = time.time(); exp()
-if __name__=="__main__": startTime = time.time(); test()
+if __name__=="__main__": startTime = time.time(); exp()
+#if __name__=="__main__": startTime = time.time(); test()
 
 
 
