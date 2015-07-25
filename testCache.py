@@ -295,6 +295,8 @@ def runExperiment():
 			timing[x] /= numTrials
 		times.append(timing)
 		
+		print("time: ", timing['total'], "cache misses: ", caching['total'])
+
 		if(xaxis == "Cols"):
 			vals.append(numCols)
 			print("trial", numCols, "ran")
