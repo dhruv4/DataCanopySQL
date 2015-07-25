@@ -152,45 +152,45 @@ def runExperiment():
 				totalStart = time.time()
 				
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['setup'] += time.time() - startTime
 				print("reached 1")
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['level1'] += time.time() - startTime
 				print("reached 2")
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['level2'] += time.time() - startTime
 				print("reached n")
 				print("numLevels", numLevels)
 				startTime = time.time()
 				if(numLevels > 2):
-					os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+					os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['leveln'] += time.time() - startTime
 				'''
 				startTime = time.time()
-				os.system("python3 pgNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("python3 pgNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['setup'] += time.time() - startTime
 				print("reached 1")
 				startTime = time.time()
-				os.system("python3 pgNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("python3 pgNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['level1'] += time.time() - startTime
 				print("reached 2")
 				startTime = time.time()
-				os.system("python3 pgNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("python3 pgNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['level2'] += time.time() - startTime
 				print("reached n")
 				print("numLevels", numLevels)
 				startTime = time.time()
 				if(numLevels > 2):
-					os.system("python3 pgNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+					os.system("python3 pgNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['leveln'] += time.time() - startTime
 				'''
 
 				timing['total'] += time.time() - totalStart
 
-				lines = [line.rstrip('\n') for line in open('filenamepg.txt', 'rw')]
+				lines = [line.rstrip('\n') for line in open('filenamepg.txt')]
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
@@ -228,25 +228,25 @@ def runExperiment():
 
 				startTime = time.time()
 
-				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
 				timing['setup'] += time.time() - startTime
 				print("reached 1")
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
 				timing['level1'] += time.time() - startTime
 				print("reached 2")
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
 				timing['level2'] += time.time() - startTime
 				print("numLevels", numLevels)
 				startTime = time.time()
 				if(numLevels > 2):
-					os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filename.txt 2>&1")
+					os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
 				timing['leveln'] += time.time() - startTime
 
 				timing['total'] += time.time() - totalStart
 
-				lines = [line.rstrip('\n') for line in open('filenamemdb.txt', 'rw')]
+				lines = [line.rstrip('\n') for line in open('filenamemdb.txt')]
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
