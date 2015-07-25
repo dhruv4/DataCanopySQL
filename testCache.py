@@ -282,7 +282,7 @@ def runExperiment():
 			cur.execute("SELECT COUNT(*) FROM dc_exp")
 			print("Size of Data Canopy: ", cur.fetchone()[0])
 			print("Predicted Size of DC: ", numChunks*(2**numCols - 1))
-			#cur.execute("DROP TABLE dc_exp")
+			cur.execute("DROP TABLE dc_exp")
 			conn.commit()
 
 			print(j)
