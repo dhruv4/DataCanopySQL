@@ -274,12 +274,12 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two=0):
 	for i in range(3, levels+1):
 		print("reached", i)
 		comb = list(itertools.combinations(range(1, numCols + 1), i))
-		for c in range(numChunks):
+		for j in comb: #create combinations of cols
 			if(two == 1):
 				comb2 = list(itertools.combinations(j, 2))
 			else:
 				comb2 = list(itertools.combinations(j, i-1))
-			for j in comb: #create combinations of cols
+			for c in range(numChunks):
 				vals = []
 				for k in comb2:
 					if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
@@ -390,20 +390,28 @@ def main():
 	print("Run time: ", time.time() - startTime, " seconds")
 
 def test():
-	numChunks = 5
-	numCols = 5
-	numRows = 100
-	levels = numCols
+	numChunks = 10
+	numCols = 15
+	numRows = 10000
 
 	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
 
+	createTable(cur, conn, "testa", numCols+1)
+	insertRandData(cur, conn, "testa", numRows)
+	conn.commit()
 
-	createTable(cur, conn, "test", 6)
-	insertRandData(cur, conn, "test", 100)
-	timing = createDCTable(cur, conn, "test", levels, numChunks, numCols, numRows)
+	createDCTableSetup("testa", numCols, numChunks, numCols, numRows)
+	print("setup done")
+	createDCTableLevel1("testa", numCols, numChunks, numCols, numRows)
+	print("level 1 made")
+	createDCTableLevel2("testa", numCols, numChunks, numCols, numRows)
+	print("level 2 made")
+	createDCTableLeveln("testa", numCols, numChunks, numCols, numRows)
+	print("done")
 
-	print(timing)
+	conn.commit()
+	print(time.time() - startTime)
 
 def exp():
 	
@@ -417,4 +425,5 @@ def exp():
 		createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
 
 #if __name__=="__main__": startTime = time.time(); main()
-if __name__=="__main__": startTime = time.time(); exp()
+if __name__=="__main__": startTime = time.time(); test()
+#if __name__=="__main__": startTime = time.time(); exp()

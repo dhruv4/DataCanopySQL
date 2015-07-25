@@ -202,17 +202,17 @@ def test():
 	print(checkLevel2(9))
 
 
-	createTable(cur, conn, "test", numCols)
-	insertRandData(cur, conn, "test", numRows)
+	createTable(cur, conn, "testa", numCols)
+	insertRandData(cur, conn, "testa", numRows)
 	conn.commit()
 
-	createDCTableSetup("test", numCols, numChunks, numCols, numRows)
+	createDCTableSetup("testa", numCols, numChunks, numCols, numRows)
 	print("setup done")
-	createDCTableLevel1("test", numCols, numChunks, numCols, numRows)
+	createDCTableLevel1("testa", numCols, numChunks, numCols, numRows)
 	print("level 1 made")
-	createDCTableLevel2("test", numCols, numChunks, numCols, numRows)
+	createDCTableLevel2("testa", numCols, numChunks, numCols, numRows)
 	print("level 2 made")
-	createDCTableLeveln("test", numCols, numChunks, numCols, numRows)
+	createDCTableLeveln("testa", numCols, numChunks, numCols, numRows)
 	print("done")
 
 	conn.commit()
