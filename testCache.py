@@ -190,7 +190,7 @@ def runExperiment():
 
 				timing['total'] += time.time() - totalStart
 
-				lines = [line.rstrip('\n') for line in open('filenamepg.txt', 'w')]
+				lines = [line.rstrip('\n') for line in open('filenamepg.txt', 'rw')]
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
