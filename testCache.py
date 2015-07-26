@@ -114,6 +114,7 @@ def runExperiment():
 			conn = pg.connect(dbname="postgres")
 			cur = conn.cursor()
 			pgNew.createTable(cur, conn, 'exp', numCols)
+			print(numCols)
 			#pgNew.insertRandData(cur, conn, 'exp', numRows)
 			if(xaxis == "Cols"):
 				cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numCols) + ".csv' DELIMITER ',' CSV")
