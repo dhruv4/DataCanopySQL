@@ -89,7 +89,7 @@ def runExperiment():
 		r = int(math.ceil(math.log(numChunks, 10)))
 		a = 1
 	elif(xaxis == "Cols"):
-		r = numCols/5
+		r = int(numCols/5)
 		a = 1
 	elif(xaxis == "Rows"):
 		r = int(math.ceil(math.log(numRows, 10)))
