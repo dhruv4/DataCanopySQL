@@ -1,4 +1,3 @@
-614010--cache-misses
-1574861--cache-misses
-8236641--cache-misses
-5578075--cache-misses
+618241--cache-misses
+1042144--cache-misses
+4777389--cache-misses
