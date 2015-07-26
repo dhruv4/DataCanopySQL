@@ -113,7 +113,7 @@ def runExperiment():
 
 			conn = pg.connect(dbname="postgres")
 			cur = conn.cursor()
-			pgNew.createTable(cur, conn, 'exp', numCols + 1)
+			pgNew.createTable(cur, conn, 'exp', numCols)
 			print(numCols)
 			#pgNew.insertRandData(cur, conn, 'exp', numRows)
 			if(xaxis == "Cols"):
