@@ -113,14 +113,13 @@ def runExperiment():
 			cur = conn.cursor()
 			pgNew.createTable(cur, conn, 'exp', numCols)
 			conn.commit()
-			print(numCols)
 			#pgNew.insertRandData(cur, conn, 'exp', numRows)
 			if(xaxis == "Cols"):
 				cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numCols) + ".csv' DELIMITER ',' CSV")
 			elif(xaxis == "Rows"):
 				cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 			elif(xaxis == "Chunks"):
-				cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numChunks) + "c.csv' DELIMITER ',' CSV")
+				cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 
 		elif(sys.argv[1] == "mdb"):
 
@@ -128,13 +127,12 @@ def runExperiment():
 			cur = conn.cursor()
 			mdbNew.createTable(cur, conn, 'exp', numCols)
 			#mdbNew.insertRandData(cur, conn, 'exp', numRows)
-			
 			if(xaxis == "Cols"):
 				cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numCols) + ".csv' USING DELIMITERS ','")
 			elif(xaxis == "Rows"):
 				cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' USING DELIMITERS ','")
 			elif(xaxis == "Chunks"):
-				cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numChunks) + "c.csv' USING DELIMITERS ','")
+				cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' USING DELIMITERS ','")
 
 			#cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".npy'")
 		
@@ -293,7 +291,6 @@ def runExperiment():
 
 			cur.execute("SELECT COUNT(*) FROM dc_exp")
 			print("Size of Data Canopy: ", cur.fetchone()[0])
-			print("numCols", numCols, "numChunks", numChunks)
 			print("Predicted Size of DC: ", numChunks*(2**numCols - 1))
 			cur.execute("DROP TABLE dc_exp")
 			conn.commit()
