@@ -99,6 +99,7 @@ def runExperiment():
 		
 		if(xaxis == "Cols"):
 			numCols = 5*i
+			numLevels = numCols
 		elif(xaxis == "Rows"):
 			numRows = 10**i
 		elif(xaxis == "Chunks"):
@@ -112,7 +113,7 @@ def runExperiment():
 
 			conn = pg.connect(dbname="postgres")
 			cur = conn.cursor()
-			pgNew.createTable(cur, conn, 'exp', numCols + 1)
+			pgNew.createTable(cur, conn, 'exp', numCols)
 			#pgNew.insertRandData(cur, conn, 'exp', numRows)
 			if(xaxis == "Cols"):
 				cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numCols) + ".csv' DELIMITER ',' CSV")
@@ -125,7 +126,7 @@ def runExperiment():
 
 			conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 			cur = conn.cursor()
-			mdbNew.createTable(cur, conn, 'exp', numCols + 1)
+			mdbNew.createTable(cur, conn, 'exp', numCols)
 			#mdbNew.insertRandData(cur, conn, 'exp', numRows)
 			
 			if(xaxis == "Cols"):

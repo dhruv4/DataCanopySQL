@@ -4,6 +4,6 @@ import numpy as np
 for x in [5, 10, 15, 20, 25]:
 	#np.save("test" + str(x) + ".npy", np.random.rand(x, 15))
 	#np.savetxt("test" + str(x) + ".csv", np.random.randint(15, x),delimiter=",")
-	np.savetxt("test" + str(x) + ".csv", np.random.randint(5, size=(x+1, 100000)),fmt='%i', delimiter=",")
+	np.savetxt("test" + str(x) + ".csv", np.random.randint(5, size=(x, 100000)),fmt='%i', delimiter=",")
 	print("made", x)
 
