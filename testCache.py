@@ -114,8 +114,12 @@ def runExperiment():
 			cur = conn.cursor()
 			pgNew.createTable(cur, conn, 'exp', numCols + 1)
 			#pgNew.insertRandData(cur, conn, 'exp', numRows)
-			cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
-			#cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".npy' WITH BINARY")
+			if(xaxis == "Cols"):
+				cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numCols) + ".csv' DELIMITER ',' CSV")
+			elif(xaxis == "Rows"):
+				cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
+			elif(xaxis == "Chunks"):
+				cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numChunks) + "c.csv' DELIMITER ',' CSV")
 
 		elif(sys.argv[1] == "mdb"):
 
@@ -123,7 +127,14 @@ def runExperiment():
 			cur = conn.cursor()
 			mdbNew.createTable(cur, conn, 'exp', numCols + 1)
 			#mdbNew.insertRandData(cur, conn, 'exp', numRows)
-			cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' USING DELIMITERS ','")
+			
+			if(xaxis == "Cols"):
+				cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numCols) + ".csv' USING DELIMITERS ','")
+			elif(xaxis == "Rows"):
+				cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' USING DELIMITERS ','")
+			elif(xaxis == "Chunks"):
+				cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numChunks) + "c.csv' USING DELIMITERS ','")
+
 			#cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".npy'")
 		
 		conn.commit()
