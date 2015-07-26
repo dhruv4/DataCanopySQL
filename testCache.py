@@ -105,8 +105,6 @@ def runExperiment():
 		elif(xaxis == "Chunks"):
 			numChunks = 10**i
 		
-		#numLevels = numCols
-
 		startTime = time.time()
 
 		if(sys.argv[1] == "pg"):
