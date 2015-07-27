@@ -27,16 +27,16 @@ def graph(x, t, xtitle, name, level, db, c=0, ylog=0):
 	
 	print("x", x, "t", t, name)
 
-	if(name[4:]=="setup"):
-		plt.plot(x, t, '-yo', label=name[4:])
-	if(name[4:]=="level1"):
-		plt.plot(x, t, '-r+', label=name[4:])
-	if(name[4:]=="level2"):
-		plt.plot(x, t, '-gx', label=name[4:])
-	if(name[4:]=="leveln"):
-		plt.plot(x, t, '-b*', label=name[4:])
-	if(name[4:]=="total"):
-		plt.plot(x, t, '-ms', label=name[4:])
+	if(level =="setup"):
+		plt.plot(x, t, '-yo', label=level)
+	if(level =="level1"):
+		plt.plot(x, t, '-r+', label=level)
+	if(level =="level2"):
+		plt.plot(x, t, '-gx', label=level)
+	if(level =="leveln"):
+		plt.plot(x, t, '-b*', label=level)
+	if(level =="total"):
+		plt.plot(x, t, '-ms', label=level)
 
 	plt.legend(loc="upper left")
 	if(xtitle == "Rows"):
