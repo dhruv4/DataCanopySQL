@@ -325,6 +325,9 @@ def runExperiment():
 		cur.close()
 		conn.close()
 
+		#####MOVE WRITING TO FILE TO HERE
+
+
 	print("vals", vals)
 	print("caches", caches)
 	
