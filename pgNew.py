@@ -123,11 +123,11 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
 			
 			vals = []
 			for x in range(numCols):
-				if((i << x) & 1 == 1):
-					for y in range(i+1, numCols):
-						if((i << y) & 1 == 1):
+				if((i >> x) & 1 == 1):
+					for y in range(x+1, numCols):
+						if((i >> y) & 1 == 1):
 							cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0 = " 
-								+ idChunkCombine(2**i + 2**j, c, numChunks))
+								+ str(idChunkCombine(2**x + 2**y, c, numChunks)))
 							
 							vals.append(cur.fetchone()[0])	
 

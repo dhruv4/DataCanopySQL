@@ -272,7 +272,7 @@ def createDCTableLeveln(table, levels, numChunks, numCols, numRows, two=0):
 	cur = conn.cursor()
 
 	for i in range(3, levels+1):
-		print("reached", i)
+		#print("reached", i)
 		comb = list(itertools.combinations(range(1, numCols + 1), i))
 		for j in comb: #create combinations of cols
 			if(two == 1):
@@ -391,7 +391,7 @@ def main():
 
 def test():
 	numChunks = 10
-	numCols = 15
+	numCols = 5
 	numRows = 10000
 
 	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
