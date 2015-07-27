@@ -86,7 +86,8 @@ def runExperiment():
 	vals = []
 
 	if(xaxis == "Chunks"):
-		r = int(math.ceil(math.log(numChunks, 10)))
+		#r = int(math.ceil(math.log(numChunks, 10)))
+		r = int(numChunks/10)
 		a = 1
 	elif(xaxis == "Cols"):
 		r = int(numCols/5)
@@ -103,7 +104,8 @@ def runExperiment():
 		elif(xaxis == "Rows"):
 			numRows = 10**i
 		elif(xaxis == "Chunks"):
-			numChunks = 10**i
+			#numChunks = 10**i
+			numChunks = 10*i
 		
 		startTime = time.time()
 
