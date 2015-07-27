@@ -327,6 +327,7 @@ def runExperiment():
 
 		#####MOVE WRITING TO FILE TO HERE
 
+		#Ornah?? It would give me a way to stop and start again...
 
 	print("vals", vals)
 	print("caches", caches)

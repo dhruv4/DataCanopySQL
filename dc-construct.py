@@ -1,252 +1,169 @@
-#dc-contruct.py
+#pgNew.py
 import sys, random, math, itertools
 import psycopg2 as pg
 import time
 from numpy import *
-import monetdb.sql as mdb
 
-def binToRecTrans(bin, numCols):
+def checkLevel1(x):
 
-	#input binary representation, return list of columns, chunk
+	while (((x % 2) == 0) and x > 1): #While x is even and > 1
+		x >>= 1
+	return (x == 1)
 
-	bin = str(bin)
+def checkLevel2(x):
 
-	col = [i for i in range(numCols) if(bin[i] == '1')]
-	chunk = int(bin[numCols:], 2)
+	return bin(x).count('1') == 2
 
-	return col, chunk
+def createTable(cur, conn, name, numCol, b=0):
 
-def recToBinTrans(col, chunk, numCols, numChunks):
-	
-	chunkBinLen = math.ceil(math.log(numChunks, 2))
-
-	#input list of columns relevant, chunk number
-
-	colBin = ""
-
-	for x in range(numCols + 1):
-		if(x in col):
-			colBin += '1'
-		else:
-			colBin += '0'
-
-	chunkBin = bin(chunk)[2:]
-	if(len(chunkBin) < chunkBinLen):
-		lcb = len(chunkBin)
-		for x in range(chunkBinLen - lcb):
-			chunkBin = "0" + chunkBin
-
-	return colBin + chunkBin
-
-def createTable(cur, conn, name, numCol, db, p=0, l=0):
-
-	if(p == 1):
-		if(db == "mdb"):
-			if(l == 1):
-				cols = "(col0 blob PRIMARY KEY,"
-			else:
-				cols = "(col0 bigint PRIMARY KEY,"
-			for x in range(1, numCol):
-				cols += "col" + str(x) + " double precision,"
-		else:
-			cols = "(col0 varbit PRIMARY KEY,"
-			for x in range(1, numCol):
-				cols += "col" + str(x) + " double precision,"
+	if(b == 1):
+		cols = "(col0 bigint PRIMARY KEY,"
+		for x in range(1, numCol):
+			cols += "col" + str(x) + " double precision,"
 	else:
 		cols = "("
 		for x in range(numCol):
 			cols += "col" + str(x) + " int,"
-
+	
 	cols = cols[:-1]
 
 	cols += ")"
 
 	cur.execute("CREATE TABLE " + name + " " + cols)
 
-def createDCTableSetup(table, levels, numChunks, numCols, numRows, db):
-
-	if(db == "mdb"):
-		conn = mdb.connect(username="monetdb", password="monetdb", database="test")
-		cur = conn.cursor()
-		if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
-			createTable(cur, conn, 'dc_' + table, 6, db, 1, 1)
-		else:
-			createTable(cur, conn, 'dc_' + table, 6, db, 1)
-	elif(db == "pg"):
-		conn = pg.connect(dbname="postgres")
-		cur = conn.cursor()
-		createTable(cur, conn, 'dc_' + table, 6, db, 1)		
-
-	conn.commit()
-
-def createDCTableLevel1(table, levels, numChunks, numCols, numRows, db):
-
-	if(db == "mdb"):
-		conn = mdb.connect(username="monetdb", password="monetdb", database="test")
-	elif(db == "pg"):
-		conn = pg.connect(dbname="postgres")
-
-	cur = conn.cursor()
-
-	maxRows = (2**numCols - 1)*numChunks
-	sizeChunk = math.floor(numRows/numChunks)
-	#sizeChunk = math.ceil(numRows/numChunks)
-
-	if(db == "mdb"):
-		cur.execute("SELECT * FROM " + table)
-		colList = [x[0] for x in  cur.description]
-	elif(db == "pg"):
-		cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
-		colList = [x[0] for x in cur.fetchall()]
-
-	#level 1
-	for i in range(1, len(colList)):
-		for x in range(numChunks):
-
-			if(db == "mdb"):
-				#cur.execute("CREATE FUNCTION GET_CHUNK(lim INT, off INT, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm integer)"
-				#	+" RETURN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
-				##^^This is the statement that SHOULD work but doesn't because monetdb doesn't recognize the variables like "col", "lim"
-				
-				cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (clm integer) "
-					+"BEGIN RETURN SELECT " + colList[i] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(x*sizeChunk) + "; END;")
-				
-				#cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm), MEDIAN(clm) FROM GET_CHUNK()")
-
-				#removed median for consistency
-
-				cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm) FROM GET_CHUNK()")
-
-				#avg, std, var, med = cur.fetchone()
-				avg, std, var = cur.fetchone()
-
-				med = 0
-
-				#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[i] + " ORDER BY COUNT( ) DESC")
-				#mod = int(cur.fetchone()[0])
-				mod = 0
-				cur.execute("DROP FUNCTION GET_CHUNK()")
-
-			elif(db == "pg"):
-
-				cur.execute("SELECT AVG(ss), STDDEV(ss), VAR_SAMP(ss) FROM (SELECT " 
-				+ colList[j] + " AS ss FROM " 
-				+ table + " LIMIT " + str(sizeChunk) 
-				+ " OFFSET " + str(x*sizeChunk) + ") as foo")
-				avg, stddev, var = cur.fetchone()
-
-				med = 0 #median????
-
-				#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[j] + " ORDER BY COUNT( ) DESC")
-				#mod = int(cur.fetchone()[0])
-				mod = 0
-
-			if(db == "pg" or (db == "mdb" and (numCols + math.ceil(math.log(numChunks, 2)) >= 32))):
-				cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", 
-					[recToBinTrans([i], x, numCols, numChunks), avg, std,var,med,mod])
-			else:
-				cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)", 
-					[int(recToBinTrans([i], x, numCols, numChunks), 2), avg, std,var,med,mod])
-			
-	conn.commit()
+def idChunkCombine(idn, chunk, numChunks):
 	
-def createDCTableLevel2(table, levels, numChunks, numCols, numRows, db):
+	return ((idn << math.ceil(math.log(numChunks, 2))) | chunk)
 
-	if(db == "mdb"):
-		conn = mdb.connect(username="monetdb", password="monetdb", database="test")
-	elif(db == "pg"):
-		conn = pg.connect(dbname="postgres")
-
+def createDCTableSetup(table, levels, numChunks, numCols, numRows):
+	
+	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
 
+	createTable(cur, conn, 'dc_' + table, 6, 1)
+
+	conn.commit()
+
+def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
+
+	conn = pg.connect(dbname="postgres")
+	cur = conn.cursor()
+
+	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'")
+	colList = [x[0] for x in cur.fetchall()]
+
 	maxRows = (2**numCols - 1)*numChunks
-	sizeChunk = math.floor(numRows/numChunks)
-	#sizeChunk = math.ceil(numRows/numChunks)
+	sizeChunk = math.ceil(numRows/numChunks)
 
-	if(db == "mdb"):
-		cur.execute("SELECT * FROM " + table)
-		colList = [x[0] for x in  cur.description]
-	elif(db == "pg"):
-		cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'");
-		colList = [x[0] for x in cur.fetchall()]
+	ID = 1
+	for c in range(numChunks):
+		for i in range(numCols):
 
-	print("reached 2")
-
-	#level 2
-	for i, j in itertools.combinations(range(1, numCols+1), 2):
-		for c in range(numChunks):
+			cur.execute("SELECT AVG(ss), STDDEV(ss), VAR_SAMP(ss) FROM (SELECT " 
+				+ colList[i] + " AS ss FROM " 
+				+ table + " LIMIT " + str(sizeChunk) 
+				+ " OFFSET " + str(c*sizeChunk) + ") as foo")
 			
-			if(db == "mdb"):
-				cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (cl1 bigint, cl2 bigint) "
-				+ "BEGIN RETURN SELECT " + colList[i] + "," + colList[j] + " FROM " + table 
-				+ " LIMIT " + str(sizeChunk) + " OFFSET " + str(c*sizeChunk) + "; END;")
-				
-				cur.execute("SELECT CORR(cl1, cl2) FROM GET_CHUNK()")
+			avg, std, var = cur.fetchone()
 
-			elif(db == "pg"):
-				cur.execute("SELECT CORR(x, y) FROM (SELECT cast(" + colList[j] + " as double precision) AS x, cast(" 
-					+ colList[i] + " as double precision) AS y FROM " 
+			med = 0 #median
+
+			#cur.execute("SELECT TOP 1 COUNT( ) val, freq FROM " + table + " GROUP BY " + colList[j] + " ORDER BY COUNT( ) DESC")
+			#mod = int(cur.fetchone()[0])
+			mod = 0
+
+			ID = 1<<i
+
+			ID = idChunkCombine(ID, c, numChunks)
+
+			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
+				[ID, avg, std,var,med,mod])
+
+	conn.commit()
+
+def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
+	
+	conn = pg.connect(dbname="postgres")
+	cur = conn.cursor()
+
+	cur.execute("SELECT column_name from information_schema.columns where table_name='" + table + "'")
+	colList = [x[0] for x in cur.fetchall()]
+
+	maxRows = (2**numCols - 1)*numChunks
+	sizeChunk = math.ceil(numRows/numChunks)
+
+	for c in range(numChunks):
+		for i in range(numCols - 1):
+			for j in range(i+1, numCols):
+				cur.execute("SELECT CORR(x, y) FROM (SELECT cast(" + colList[i] + " as double precision) AS x, cast(" 
+					+ colList[j] + " as double precision) AS y FROM " 
 					+ table + " LIMIT " + str(sizeChunk) 
 					+ " OFFSET " + str(c*sizeChunk) + ") as foo")
 
-			if(db == "pg" or (db == "mdb" and (numCols + math.ceil(math.log(numChunks, 2)) >= 32))):
+				####^^^^ This HAS to be the slowest statement right?
+
 				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-					[recToBinTrans([i, j], c, numCols, numChunks), float(cur.fetchone()[0])])
-			else:
-				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-					[int(recToBinTrans([i, j], c, numCols, numChunks), 2), cur.fetchone()[0]])
-				
-			cur.execute("DROP FUNCTION GET_CHUNK()")
+					[idChunkCombine(2**i + 2**j, c, numChunks),float(cur.fetchone()[0])])
 
 	conn.commit()
 
-def createDCTableLeveln(table, levels, numChunks, numCols, numRows, db, two = 0):
+def createDCTableLeveln(table, levels, numChunks, numCols, numRows):
 
-	if(db == "mdb"):
-		conn = mdb.connect(username="monetdb", password="monetdb", database="test")
-	elif(db == "pg"):
-		conn = pg.connect(dbname="postgres")
-
+	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
 
-	#3-n Levels
-	for i in range(3, levels+1):
-		print("reached", i)
-		comb = list(itertools.combinations(range(1, numCols + 1), i))
-		for cval in range(numChunks):
-			if(two == 1):
-				comb2 = list(itertools.combinations(j, 2))
-			else:
-				comb2 = list(itertools.combinations(j, i-1))
-			for j in comb:
-				vals = []
-				for k in comb2:
-					
-					if(db == "pg"):
-						cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0 = cast('" 
-							+ recToBinTrans(k, cval, numCols, numChunks) + "' as varbit)")
-					
-					elif(db == "mdb"):
-						if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
-							cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
-								+ recToBinTrans(k, c, numCols, numChunks) + "'")
-						else:
-							cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0='" 
-								+ str(int(recToBinTrans(k, c, numCols, numChunks), 2)) + "'")
+	for c in range(numChunks):
+		for i in range(1, 2**numCols):
+			if(checkLevel1(i) == 1 or checkLevel2(i) == 1):
+				continue
+			
+			vals = []
+			for x in range(numCols):
+				if((i << x) & 1 == 1):
+					for y in range(i+1, numCols):
+						if((i << y) & 1 == 1):
+							cur.execute("SELECT col1 FROM dc_" + table + " WHERE col0 = " 
+								+ idChunkCombine(2**i + 2**j, c, numChunks))
+							
+							vals.append(cur.fetchone()[0])	
 
-					vals.append(cur.fetchone()[0])				
+			correlation = sum(vals) + 42
 
-				correlation = sum(vals) + 42
+			cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
+				[idChunkCombine(i, c, numChunks), correlation])
 
-				if(db == "pg"):
-					cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-						[recToBinTrans(j, cval, numCols, numChunks), correlation])
+	conn.commit()
 
-				elif(db == "mdb"):
-					if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
-						cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-							[str(recToBinTrans(j, c, numCols, numChunks)), correlation])
-					else:
-						cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
-							[str(int(recToBinTrans(j, c, numCols, numChunks), 2)), correlation])
-			conn.commit()
+def demo():
+	numChunks = 10
+	numCols = 15
+	numRows = 10000
+
+	conn = pg.connect(dbname="postgres")
+	cur = conn.cursor()
+
+	createDCTableSetup("demo", numCols, numChunks, numCols, numRows)
+	print("setup done")
+	createDCTableLevel1("demo", numCols, numChunks, numCols, numRows)
+	print("level 1 made")
+	createDCTableLevel2("demo", numCols, numChunks, numCols, numRows)
+	print("level 2 made")
+	createDCTableLeveln("demo", numCols, numChunks, numCols, numRows)
+	print("done")
+
+	conn.commit()
+	print(time.time() - startTime)
+
+def exp():
+	
+	if(sys.argv[1] == "setup"):
+		createDCTableSetup(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+	elif(sys.argv[1] == "level1"):
+		createDCTableLevel1(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+	elif(sys.argv[1] == "level2"):
+		createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+	elif(sys.argv[1] == "leveln"):
+		createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+
+#if __name__=="__main__": startTime = time.time(); exp()
+if __name__=="__main__": startTime = time.time(); demo()
