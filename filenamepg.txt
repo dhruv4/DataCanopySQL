@@ -1,4 +1,4 @@
-575196--cache-misses
-611798--cache-misses
-1086441--cache-misses
-25218060--cache-misses
+571655--cache-misses
+616753--cache-misses
+680652--cache-misses
+1436225--cache-misses
