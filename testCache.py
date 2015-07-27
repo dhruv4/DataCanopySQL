@@ -1,4 +1,4 @@
-import sys, random, math, os
+mport sys, random, math, os
 import configparser
 import psycopg2 as pg
 import monetdb.sql as mdb
@@ -433,3 +433,4 @@ def main():
 
 #if __name__=="__main__": startTime = time.time(); main()
 if __name__=="__main__": startTime = time.time(); runExperiment()
+
