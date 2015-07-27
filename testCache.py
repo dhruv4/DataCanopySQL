@@ -8,7 +8,7 @@ import Gnuplot, Gnuplot.funcutils
 import matplotlib.pyplot as plt
 import pgNew, mdbNew
 
-def graph(x, t, xtitle, name, db, c=0, ylog=0):
+def graph(x, t, xtitle, name, level, db, c=0, ylog=0):
 
 	if not os.path.exists("pgresults"):
 		os.makedirs("pgresults")
@@ -17,9 +17,9 @@ def graph(x, t, xtitle, name, db, c=0, ylog=0):
 		os.makedirs("mdbresults")
 
 	if(c == 1):
-		f = open(db + 'results/' + name + '_' + db + '_cache_' + xtitle +  '.txt', 'w')
+		f = open(db + 'results/' + name + level + '_' + db + '_cache_' + xtitle +  '.txt', 'w')
 	else:
-		f = open(db + 'results/' + name + '_' + db + '_time_' + xtitle +  '.txt', 'w')
+		f = open(db + 'results/' + name + level + '_' + db + '_time_' + xtitle +  '.txt', 'w')
 
 	for i in range(len(x)):
 		f.write(str(x[i]) + ',' + str(t[i]) + '\n')
@@ -54,15 +54,15 @@ def graph(x, t, xtitle, name, db, c=0, ylog=0):
 	if(ylog == 1):
 		if(c == 1):
 			plt.yscale('log')
-			plt.savefig(db + 'results/mpl_' + db + '_cache_' + xtitle + 'log.pdf')
+			plt.savefig(db + 'results/mpl_' + db + '_cache_' + name + xtitle + 'log.pdf')
 		else:
 			plt.yscale('log')
-			plt.savefig(db + 'results/mpl_' + db + '_time_' + xtitle + 'log.pdf')
+			plt.savefig(db + 'results/mpl_' + db + '_time_' + name + xtitle + 'log.pdf')
 	else:
 		if(c == 1):
-			plt.savefig(db + 'results/mpl_' + db + '_cache_' + xtitle + '.pdf')
+			plt.savefig(db + 'results/mpl_' + db + '_cache_' + name + xtitle + '.pdf')
 		else:
-			plt.savefig(db + 'results/mpl_' + db + '_time_' + xtitle + '.pdf')
+			plt.savefig(db + 'results/mpl_' + db + '_time_' + name + xtitle + '.pdf')
 
 def runExperiment():
 	
@@ -333,25 +333,25 @@ def runExperiment():
 	
 	for j in caching:
 
-		graph(vals, [k[j] for k in caches], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title") + j, sys.argv[1], 1)
+		graph(vals, [k[j] for k in caches], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title"), j, sys.argv[1], 1)
 
 	plt.close()
 
 	for j in caching:
 
-		graph(vals, [k[j] for k in caches], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title") + j, sys.argv[1], 1, 1)
+		graph(vals, [k[j] for k in caches], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title"), j, sys.argv[1], 1, 1)
 	
 	plt.close()
 
 	for j in timing:
 
-		graph(vals, [k[j] for k in times], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title") + j, sys.argv[1], 0)
+		graph(vals, [k[j] for k in times], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title"), j, sys.argv[1], 0)
 
 	plt.close()
 
 	for j in timing:
 
-		graph(vals, [k[j] for k in times], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title") + j, sys.argv[1], 0, 1)
+		graph(vals, [k[j] for k in times], Config.get("Experiment Config", "XAxis"), Config.get("Experiment Config", "Title"), j, sys.argv[1], 0, 1)
 	
 	plt.close()
 

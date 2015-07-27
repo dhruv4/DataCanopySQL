@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 import sys, os
 
-def graph(xtitle, name, db, c=0, ylog=0):
+def graph(xtitle, name, level, db, c=0, ylog=0):
 
 	if not os.path.exists("pgresults/graphs"):
 		os.makedirs("pgresults/graphs")
@@ -12,9 +12,9 @@ def graph(xtitle, name, db, c=0, ylog=0):
 		os.makedirs("mdbresults/graphs")
 
 	if(c == 1):
-		f = open(db + 'results/' + name + '_' + db + '_cache_' + xtitle +  '.txt', 'r')
+		f = open(db + 'results/' + name + level + '_' + db + '_cache_' + xtitle +  '.txt', 'r')
 	else:
-		f = open(db + 'results/' + name + '_' + db + '_time_' + xtitle +  '.txt', 'r')
+		f = open(db + 'results/' + name + level + '_' + db + '_time_' + xtitle +  '.txt', 'r')
 
 	x = []
 	t = []
@@ -53,15 +53,15 @@ def graph(xtitle, name, db, c=0, ylog=0):
 	if(ylog == 1):
 		if(c == 1):
 			plt.yscale('log')
-			plt.savefig(db + 'results/graphs/mpl_' + db + '_cache_' + xtitle + 'log.pdf')
+			plt.savefig(db + 'results/graphs/mpl_' + db + '_cache_' + name + xtitle + 'log.pdf')
 		else:
 			plt.yscale('log')
-			plt.savefig(db + 'results/graphs/mpl_' + db + '_time_' + xtitle + 'log.pdf')
+			plt.savefig(db + 'results/graphs/mpl_' + db + '_time_' + name + xtitle + 'log.pdf')
 	else:
 		if(c == 1):
-			plt.savefig(db + 'results/graphs/mpl_' + db + '_cache_' + xtitle + '.pdf')
+			plt.savefig(db + 'results/graphs/mpl_' + db + '_cache_' + name + xtitle + '.pdf')
 		else:
-			plt.savefig(db + 'results/graphs/mpl_' + db + '_time_' + xtitle + '.pdf')
+			plt.savefig(db + 'results/graphs/mpl_' + db + '_time_' + name + xtitle + '.pdf')
 
 
 def main():
@@ -74,7 +74,7 @@ def main():
 
 	for j in levels:
 
-		graph(sys.argv[3], sys.argv[2] + j, sys.argv[1], 1)
+		graph(sys.argv[3], sys.argv[2], j, sys.argv[1], 1)
 
 	print("graphed cache")
 
@@ -82,7 +82,7 @@ def main():
 
 	for j in levels:
 
-		graph(sys.argv[3], sys.argv[2] + j, sys.argv[1], 1, 1)
+		graph(sys.argv[3], sys.argv[2], j, sys.argv[1], 1, 1)
 	
 	print("graphed cache with log")
 
@@ -90,7 +90,7 @@ def main():
 
 	for j in levels:
 
-		graph(sys.argv[3], sys.argv[2] + j, sys.argv[1], 0)
+		graph(sys.argv[3], sys.argv[2], j, sys.argv[1], 0)
 
 	print("graphed time")
 
@@ -98,7 +98,7 @@ def main():
 
 	for j in levels:
 
-		graph(sys.argv[3], sys.argv[2] + j, sys.argv[1], 0, 1)
+		graph(sys.argv[3], sys.argv[2], j, sys.argv[1], 0, 1)
 	
 	print("graphed time with log")
 
