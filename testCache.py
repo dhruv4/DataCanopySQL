@@ -248,6 +248,7 @@ def runExperiment():
 				startTime = time.time()
 				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
 				timing['level2'] += time.time() - startTime
+				print("reached n")	
 				print("numLevels", numLevels)
 				startTime = time.time()
 				if(numLevels > 2):
