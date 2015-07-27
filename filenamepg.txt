@@ -1,4 +1,4 @@
-571991--cache-misses
-626699--cache-misses
-1214622--cache-misses
-103189538--cache-misses
+575196--cache-misses
+611798--cache-misses
+1086441--cache-misses
+25218060--cache-misses

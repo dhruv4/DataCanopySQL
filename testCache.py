@@ -1,4 +1,4 @@
-mport sys, random, math, os
+import sys, random, math, os
 import configparser
 import psycopg2 as pg
 import monetdb.sql as mdb

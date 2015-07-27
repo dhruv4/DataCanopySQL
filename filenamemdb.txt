@@ -1,4 +1,26 @@
-668162--cache-misses
-1111924--cache-misses
-3546074--cache-misses
-3854060--cache-misses
+685654--cache-misses
+69377305--cache-misses
+719599162--cache-misses
+Traceback (most recent call last):
+  File "mdbNew.py", line 232, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "mdbNew.py", line 230, in exp
+    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "mdbNew.py", line 168, in createDCTableLeveln
+    [idChunkCombine(i, c, numChunks), correlation])
+  File "/usr/local/lib/python3.2/dist-packages/monetdb/sql/cursors.py", line 175, in execute
+    block = self.connection.execute(query)
+  File "/usr/local/lib/python3.2/dist-packages/monetdb/sql/connections.py", line 138, in execute
+    return self.command('s' + query + ';')
+  File "/usr/local/lib/python3.2/dist-packages/monetdb/sql/connections.py", line 143, in command
+    return self.mapi.cmd(command)
+  File "/usr/local/lib/python3.2/dist-packages/monetdb/mapi.py", line 191, in cmd
+    response = self._getblock()
+  File "/usr/local/lib/python3.2/dist-packages/monetdb/mapi.py", line 253, in _getblock
+    return self._getblock_inet()
+  File "/usr/local/lib/python3.2/dist-packages/monetdb/mapi.py", line 259, in _getblock_inet
+    flag = self._getbytes(2)
+  File "/usr/local/lib/python3.2/dist-packages/monetdb/mapi.py", line 281, in _getbytes
+    recv = self.socket.recv(count)
+KeyboardInterrupt
+165286520--cache-misses
