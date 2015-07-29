@@ -12,7 +12,7 @@ def checkLevel1(x):
 
 def checkLevel2(x):
 	'''
-	while (((x & 1) == 0) and x > 1): #/* While x is even and > 1 */
+	while (((x & 1) == 0) and x > 1): #While x is even and > 1
 		x >>= 1
 	return (x == 2)
 	'''
@@ -80,18 +80,27 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 	for c in range(numChunks):
 		for i in range(numCols):
 
-			#cur.execute("CREATE FUNCTION GET_CHUNK(lim INT, off INT, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm integer)"
-			#	+" RETURN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
+			#CREATE FUNCTION fWedgeV4(x1 float, y1 float, z1 float, x2 float, y2 int, z2 int) RETURNS TABLE (x float, y float, z float) RETURN TABLE (SELECT (y2) as x, x2 as y, z2 as z LIMIT y2 OFFSET z2 );
+
+			#cur.execute("CREATE FUNCTION BS_STUFF( s1 varchar(32), st int, len int, s3 varchar(32)) RETURNS varchar(32) BEGIN DECLARE res varchar(32), aux varchar(32);  DECLARE ofset int; SET ofset = 0; RETURN res; END;")
+
+			#cur.execute("CREATE FUNCTION GET_CHUNK(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN RETURN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
+			
+			cur.execute("CREATE FUNCTION GET_CHUNK(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int); DECLARE query varchar(255); SET query = CONCAT('') BEGIN RETURN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
+
+
 			##^^This is the statement that SHOULD work but doesn't because monetdb doesn't recognize the variables like "col", "lim"
 			
-			cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (clm integer) "
-				+"BEGIN RETURN SELECT " + colList[i] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(c*sizeChunk) + "; END;")
+			#cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (clm integer) "
+			#	+"BEGIN RETURN SELECT " + colList[i] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(c*sizeChunk) + "; END;")
 			
 			#cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm), MEDIAN(clm) FROM GET_CHUNK()")
 
 			#removed median for consistency
 
-			cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm) FROM GET_CHUNK()")
+			#cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm) FROM GET_CHUNK()")
+
+			cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm) FROM GET_CHUNK(" + str(sizeChunk) + ", " + str(c*sizeChunk) + ", '" + table + "', '" + colList [i] + "')")
 
 			#avg, std, var, med = cur.fetchone()
 			avg, std, var = cur.fetchone()
@@ -194,18 +203,18 @@ def insertRandData(cur, conn, table, length):
 def test():
 	numChunks = 10
 	numCols = 5
-	numRows = 10000
+	numRows = 1000
 
 	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
 
 	print(checkLevel2(9))
 
-
+	'''
 	createTable(cur, conn, "testa", numCols)
 	insertRandData(cur, conn, "testa", numRows)
 	conn.commit()
-
+	'''
 	createDCTableSetup("testa", numCols, numChunks, numCols, numRows)
 	print("setup done")
 	createDCTableLevel1("testa", numCols, numChunks, numCols, numRows)
@@ -229,8 +238,8 @@ def exp():
 	elif(sys.argv[1] == "leveln"):
 		createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
 
-if __name__=="__main__": startTime = time.time(); exp()
-#if __name__=="__main__": startTime = time.time(); test()
+#if __name__=="__main__": startTime = time.time(); exp()
+if __name__=="__main__": startTime = time.time(); test()
 
 
 
