@@ -109,6 +109,7 @@ def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 
 				#cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 				#	[idChunkCombine(2**i + 2**j, c, numChunks),float(cur.fetchone()[0])])
+				continue
 
 	conn.commit()
 
