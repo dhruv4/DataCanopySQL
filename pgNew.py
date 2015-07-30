@@ -17,10 +17,14 @@ def checkLevel2(x):
 	'''
 	return bin(x).count('1') == 2
 
-def createTable(cur, conn, name, numCol, b=0):
+def createTable(cur, conn, name, numCol, b=0, l=0):
 
 	if(b == 1):
-		cols = "(col0 bigint PRIMARY KEY,"
+		if(l == 1):
+			cols = "(col0 bigint PRIMARY KEY,"
+		else:
+			cols = "(col0 int PRIMARY KEY,"
+		
 		for x in range(1, numCol):
 			cols += "col" + str(x) + " double precision,"
 	else:
@@ -28,7 +32,6 @@ def createTable(cur, conn, name, numCol, b=0):
 		for x in range(numCol):
 			cols += "col" + str(x) + " int,"
 	
-
 	cols = cols[:-1]
 
 	cols += ")"
@@ -43,7 +46,10 @@ def createDCTableSetup(table, levels, numChunks, numCols, numRows):
 	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
 
-	createTable(cur, conn, 'dc_' + table, 6, 1)
+	if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
+		createTable(cur, conn, 'dc_' + table, 6, 1, 1)
+	else:
+		createTable(cur, conn, 'dc_' + table, 6, 1)
 
 	conn.commit()
 
@@ -169,7 +175,6 @@ def test():
 	cur = conn.cursor()
 
 	print(checkLevel2(9))
-
 
 	createTable(cur, conn, "test", numCols + 1)
 	insertRandData(cur, conn, "test", numRows)

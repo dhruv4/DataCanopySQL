@@ -1,5 +1,4 @@
 #mdbNew.py
-#pgNew.py
 import sys, random, math, itertools
 import monetdb.sql as mdb
 import time
@@ -18,34 +17,23 @@ def checkLevel2(x):
 	'''
 	return bin(x).count('1') == 2
 
-def createTable(cur, conn, name, numCol, b=0):
+def createTable(cur, conn, name, numCol, b=0, l=0):
 
 	if(b == 1):
-		cols = "(col0 bigint PRIMARY KEY,"
+		
+		if(l == 1):
+			cols = "(col0 bigint PRIMARY KEY,"
+		else:
+			cols = "(col0 int PRIMARY KEY,"
+
 		for x in range(1, numCol):
 			cols += "col" + str(x) + " double precision,"
 	else:
+
 		cols = "("
 		for x in range(numCol):
 			cols += "col" + str(x) + " int,"
 	
-
-	cols = cols[:-1]
-
-	cols += ")"
-
-	cur.execute("CREATE TABLE " + name + " " + cols)
-
-def createTable(cur, conn, name, numCol, p=0):
-
-	if(p == 1):
-		cols = "(col0 bigint PRIMARY KEY,"
-		for x in range(1, numCol):
-			cols += "col" + str(x) + " double precision,"
-	else:
-		cols = "("
-		for x in range(numCol):
-			cols += "col" + str(x) + " int,"
 
 	cols = cols[:-1]
 
@@ -61,7 +49,10 @@ def createDCTableSetup(table, levels, numChunks, numCols, numRows):
 	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
 
-	createTable(cur, conn, 'dc_' + table, 6, 1)
+	if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
+		createTable(cur, conn, 'dc_' + table, 6, 1, 1)
+	else:
+		createTable(cur, conn, 'dc_' + table, 6, 1)
 
 	conn.commit()
 
@@ -84,10 +75,7 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 
 			#cur.execute("CREATE FUNCTION BS_STUFF( s1 varchar(32), st int, len int, s3 varchar(32)) RETURNS varchar(32) BEGIN DECLARE res varchar(32), aux varchar(32);  DECLARE ofset int; SET ofset = 0; RETURN res; END;")
 
-			#cur.execute("CREATE FUNCTION GET_CHUNK(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN RETURN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
-			
-			cur.execute("CREATE FUNCTION GET_CHUNK(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int); DECLARE query varchar(255); SET query = CONCAT('') BEGIN RETURN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
-
+			cur.execute("CREATE FUNCTION GET_CHUNK(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN RETURN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
 
 			##^^This is the statement that SHOULD work but doesn't because monetdb doesn't recognize the variables like "col", "lim"
 			
