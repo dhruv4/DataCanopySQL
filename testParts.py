@@ -91,9 +91,8 @@ def runExperiment():
 
 		if(sys.argv[1] == "pg"):
 
-			os.system("rm -rf filenamepg.txt")
-
 			if(sys.argv[2] == "setup"):
+				os.system("rm -rf filenamepg.txt")
 				startTime = time.time()
 				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['setup'] = time.time() - startTime
@@ -145,6 +144,7 @@ def runExperiment():
 						timing['setup'] = int(line.split('-')[0])
 						break
 
+				print(caching, timing, line)
 
 				lines.remove(l1)
 				lines.remove(line)
@@ -161,6 +161,8 @@ def runExperiment():
 						timing['level1'] = int(line.split('-')[0])
 						break
 
+				print(caching, timing line)
+
 				lines.remove(l1)
 				lines.remove(line)
 
@@ -176,6 +178,8 @@ def runExperiment():
 						timing['level2'] = int(line.split('-')[0])
 						break
 
+				print(caching, timing, line)
+
 				lines.remove(l1)
 				lines.remove(line)
 
@@ -190,6 +194,8 @@ def runExperiment():
 					if(caching['leveln'] > 1):
 						timing['leveln'] = int(line.split('-')[0])
 						break
+
+				print(caching, timing, line)
 
 				lines.remove(l1)
 				lines.remove(line)
