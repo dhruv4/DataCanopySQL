@@ -37,36 +37,38 @@ def runExperiment():
 			
 	startTime = time.time()
 
-	if(sys.argv[1] == "pg" and sys.argv[2] == "setup"):
+	if(sys.argv[1] == "pg"):
 
 		conn = pg.connect(dbname="postgres")
 		cur = conn.cursor()
-		pgNew.createTable(cur, conn, 'exp', numCols)
-		conn.commit()
-		pgNew.insertRandData(cur, conn, 'exp', numRows)
-		'''
-		if(xaxis == "Cols"):
-			cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numCols) + ".csv' DELIMITER ',' CSV")
-		elif(xaxis == "Rows"):
-			cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
-		elif(xaxis == "Chunks"):
-			cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
-		'''
+		if(sys.argv[2] == "setup"):
+			pgNew.createTable(cur, conn, 'exp', numCols)
+			conn.commit()
+			pgNew.insertRandData(cur, conn, 'exp', numRows)
+			'''
+			if(xaxis == "Cols"):
+				cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numCols) + ".csv' DELIMITER ',' CSV")
+			elif(xaxis == "Rows"):
+				cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
+			elif(xaxis == "Chunks"):
+				cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
+			'''
 
 	elif(sys.argv[1] == "mdb" and sys.argv[2] == "setup"):
 
 		conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 		cur = conn.cursor()
-		mdbNew.createTable(cur, conn, 'exp', numCols)
-		#mdbNew.insertRandData(cur, conn, 'exp', numRows)
-		if(xaxis == "Cols"):
-			cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numCols) + ".csv' USING DELIMITERS ','")
-		elif(xaxis == "Rows"):
-			cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' USING DELIMITERS ','")
-		elif(xaxis == "Chunks"):
-			cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' USING DELIMITERS ','")
+		if(sys.argv[2] == "setup"):
+			mdbNew.createTable(cur, conn, 'exp', numCols)
+			#mdbNew.insertRandData(cur, conn, 'exp', numRows)
+			if(xaxis == "Cols"):
+				cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numCols) + ".csv' USING DELIMITERS ','")
+			elif(xaxis == "Rows"):
+				cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' USING DELIMITERS ','")
+			elif(xaxis == "Chunks"):
+				cur.execute("COPY INTO exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' USING DELIMITERS ','")
 
-		#cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".npy'")
+			#cur.execute("COPY INTO exp FROM 'test" + str(numRows) + ".npy'")
 	
 	conn.commit()
 
