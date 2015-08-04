@@ -207,6 +207,9 @@ def runExperiment():
 				f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'total_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 				f.write(sys.argv[3] + "," + str(timing['total']) + "\n")
 				f.close()
+				f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'total_pg_cache_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
+				f.write(sys.argv[3] + "," + str(caching['level1']) + "\n")
+				f.close()
 
 				cur.execute("SELECT COUNT(*) FROM dc_exp")
 				print("Size of Data Canopy: ", cur.fetchone()[0])
