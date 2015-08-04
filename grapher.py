@@ -29,26 +29,46 @@ def graph(xtitle, name, level, db, c=0, ylog=0):
 	if(level =="setup"):
 		plt.plot(x, t, '-yo', label=level)
 	if(level =="level1"):
-		plt.plot(x, t, '-r+', label=level)
+		plt.plot(x, t, '-r+', label="Level 1")
 	if(level =="level2"):
-		plt.plot(x, t, '-gx', label=level)
+		plt.plot(x, t, '-gx', label="Level 2")
 	if(level =="leveln"):
-		plt.plot(x, t, '-b*', label=level)
+		plt.plot(x, t, '-b*', label="Rest of Levels")
 	if(level =="total"):
-		plt.plot(x, t, '-ms', label=level)
+		plt.plot(x, t, '-ms', label="Total")
 
-	plt.legend(loc="best")
+	plt.legend(loc="best", frameon=False)
+
 	if(xtitle == "Rows"):
 		plt.xscale('log')
 
 	if(c == 1):	
-		plt.title(xtitle + " vs Cache Misses")
+		if(xtitle =="Rows"):
+			plt.title("Varying Number of Rows vs Cache Misses")
+			plt.xlabel("Number of Rows")
+		if(xtitle =="cols"):
+			plt.title("Varying Number of Columns vs Cache Misses")
+			plt.xlabel("Number of Columns")
+		if(xtitle =="chunks"):
+			plt.title("Varying Number of Chunks vs Cache Misses")
+			plt.xlabel("Number of Chunks")
+
 		plt.ylabel('Cache Misses')
+
 	else:
-		plt.title(xtitle + " vs Time (sec)")
+		if(xtitle =="Rows"):
+			plt.title("Varying Number of Rows vs Time (sec)")
+			plt.xlabel("Number of Rows")
+		if(xtitle =="cols"):
+			plt.title("Varying Number of Columns vs Time (sec)")
+			plt.xlabel("Number of Columns")
+		if(xtitle =="chunks"):
+			plt.title("Varying Number of Chunks vs Time (sec)")
+			plt.xlabel("Number of Chunks")
+
 		plt.ylabel('Time (Sec)')
+
 	plt.tight_layout()
-	plt.xlabel(xtitle)
 	
 	if(ylog == 1):
 		if(c == 1):
@@ -70,7 +90,8 @@ def main():
 	#arg2 = Test, Test2
 	#arg3 = Rows, Cols, Chunks
 
-	levels = ['setup', 'level1', 'level2', 'leveln', 'total']
+	#levels = ['setup', 'level1', 'level2', 'leveln', 'total']
+	levels = ['level1', 'level2', 'leveln', 'total']
 
 	for j in levels:
 
@@ -105,8 +126,6 @@ def main():
 	plt.close()
 
 
-#main()
-
 def cgraph(xtitle, name, db, c=0, ylog=0):
 
 	if not os.path.exists("results/graphs"):
@@ -134,18 +153,37 @@ def cgraph(xtitle, name, db, c=0, ylog=0):
 	if(db =="mdb"):
 		plt.plot(x, t, '-gx', label="MonetDB")
 
-	plt.legend(loc="best")
+	plt.legend(loc="best", frameon=False)
 	if(xtitle == "Rows" or xtitle == "Chunks"):
 		plt.xscale('log')
 
 	if(c == 1):	
-		plt.title(xtitle + " vs Cache Misses")
+		if(xtitle =="rows"):
+			plt.title("Varying Number of Rows vs Cache Misses")
+			plt.xlabel("Number of Rows")
+		if(xtitle =="cols"):
+			plt.title("Varying Number of Columns vs Cache Misses")
+			plt.xlabel("Number of Columns")
+		if(xtitle =="chunks"):
+			plt.title("Varying Number of Chunks vs Cache Misses")
+			plt.xlabel("Number of Chunks")
+
 		plt.ylabel('Cache Misses')
+		
 	else:
-		plt.title(xtitle + " vs Time (sec)")
+		if(xtitle =="rows"):
+			plt.title("Varying Number of Rows vs Time (sec)")
+			plt.xlabel("Number of Rows")
+		if(xtitle =="cols"):
+			plt.title("Varying Number of Columns vs Time (sec)")
+			plt.xlabel("Number of Columns")
+		if(xtitle =="chunks"):
+			plt.title("Varying Number of Chunks vs Time (sec)")
+			plt.xlabel("Number of Chunks")
+
 		plt.ylabel('Time (Sec)')
+
 	plt.tight_layout()
-	plt.xlabel(xtitle)
 	
 	if(ylog == 1):
 		if(c == 1):
@@ -199,6 +237,7 @@ def compare():
 
 	plt.close()
 
-compare()
+main()
+#compare()
 
 

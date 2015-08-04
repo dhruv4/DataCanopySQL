@@ -90,8 +90,10 @@ def runExperiment():
 		r = int(numChunks/10)
 		a = 1
 	elif(xaxis == "Cols"):
-		r = int(numCols/5)
-		a = 1
+		#r = int(numCols/5)
+		r = int(numCols)
+		#a = 1
+		a = 2
 	elif(xaxis == "Rows"):
 		r = int(math.ceil(math.log(numRows, 10)))
 		a = 4
@@ -99,7 +101,8 @@ def runExperiment():
 	for i in range(a, r+1):
 		
 		if(xaxis == "Cols"):
-			numCols = 5*i
+			#numCols = 5*i
+			numCols = i
 			numLevels = numCols
 		elif(xaxis == "Rows"):
 			numRows = 10**i
