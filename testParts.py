@@ -141,7 +141,7 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['setup'] > 1):
-						timing['setup'] = float(line.split('-')[0])
+						timing['setup'] = float(line.split('-')[0])/1000
 						break
 
 				print(caching, timing, l1, line, lines)
@@ -158,7 +158,7 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['level1'] > 1):
-						timing['level1'] = float(line.split('-')[0])
+						timing['level1'] = float(line.split('-')[0])/1000
 						break
 
 				print(caching, timing, l1, line, lines)
@@ -175,7 +175,7 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['level2'] > 1):
-						timing['level2'] = float(line.split('-')[0])
+						timing['level2'] = float(line.split('-')[0])/1000
 						break
 
 				print(caching, timing, l1, line, lines)
@@ -192,7 +192,7 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['leveln'] > 1):
-						timing['leveln'] = float(line.split('-')[0])
+						timing['leveln'] = float(line.split('-')[0])/1000
 						break
 
 				print(caching, timing, l1, line, lines)
@@ -271,7 +271,7 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['setup'] > 1):
-						timing['setup'] = float(line.split('-')[0])
+						timing['setup'] = float(line.split('-')[0])/1000
 						break
 
 
@@ -287,7 +287,7 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['level1'] > 1):
-						timing['level1'] = float(line.split('-')[0])
+						timing['level1'] = float(line.split('-')[0])/1000
 						break
 
 				lines.remove(l1)
@@ -302,7 +302,7 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['level2'] > 1):
-						timing['level2'] = float(line.split('-')[0])
+						timing['level2'] = float(line.split('-')[0])/1000
 						break
 
 				lines.remove(l1)
@@ -317,7 +317,7 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['leveln'] > 1):
-						timing['leveln'] = float(line.split('-')[0])
+						timing['leveln'] = float(line.split('-')[0])/1000
 						break
 
 				lines.remove(l1)
