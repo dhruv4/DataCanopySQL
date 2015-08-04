@@ -4,65 +4,8 @@ import psycopg2 as pg
 import monetdb.sql as mdb
 import time
 from numpy import *
-import Gnuplot, Gnuplot.funcutils
 import matplotlib.pyplot as plt
 import pgNew, mdbNew
-
-def graph(x, t, Config.get("Experiment Config", "XAxis"), name, level, db, c=0, ylog=0):
-
-	if not os.path.exists("pgresults"):
-		os.makedirs("pgresults")
-
-	if not os.path.exists("mdbresults"):
-		os.makedirs("mdbresults")
-
-	if(c == 1):
-		f = open(db + 'results/' + name + level + '_' + db + '_cache_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'w')
-	else:
-		f = open(db + 'results/' + name + level + '_' + db + '_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'w')
-
-	for i in range(len(x)):
-		f.write(str(x[i]) + ',' + str(t[i]) + '\n')
-	f.close()
-	
-	print("x", x, "t", t, name)
-
-	if(level =="setup"):
-		plt.plot(x, t, '-yo', label=level)
-	if(level =="level1"):
-		plt.plot(x, t, '-r+', label=level)
-	if(level =="level2"):
-		plt.plot(x, t, '-gx', label=level)
-	if(level =="leveln"):
-		plt.plot(x, t, '-b*', label=level)
-	if(level =="total"):
-		plt.plot(x, t, '-ms', label=level)
-
-	plt.legend(loc="upper left")
-	if(Config.get("Experiment Config", "XAxis") == "Rows"):
-		plt.xscale('log')
-
-	if(c == 1):	
-		plt.title(Config.get("Experiment Config", "XAxis") + " vs Cache Misses")
-		plt.ylabel('Cache Misses')
-	else:
-		plt.title(Config.get("Experiment Config", "XAxis") + " vs Time (sec)")
-		plt.ylabel('Time (Sec)')
-	plt.tight_layout()
-	plt.xlabel(Config.get("Experiment Config", "XAxis"))
-	
-	if(ylog == 1):
-		if(c == 1):
-			plt.yscale('log')
-			plt.savefig(db + 'results/mpl_' + db + '_cache_' + name + Config.get("Experiment Config", "XAxis") + 'log.pdf')
-		else:
-			plt.yscale('log')
-			plt.savefig(db + 'results/mpl_' + db + '_time_' + name + Config.get("Experiment Config", "XAxis") + 'log.pdf')
-	else:
-		if(c == 1):
-			plt.savefig(db + 'results/mpl_' + db + '_cache_' + name + Config.get("Experiment Config", "XAxis") + '.pdf')
-		else:
-			plt.savefig(db + 'results/mpl_' + db + '_time_' + name + Config.get("Experiment Config", "XAxis") + '.pdf')
 
 def runExperiment():
 	

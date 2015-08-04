@@ -4,7 +4,6 @@ import psycopg2 as pg
 import monetdb.sql as mdb
 import time
 from numpy import *
-import Gnuplot, Gnuplot.funcutils
 import matplotlib.pyplot as plt
 import pgNew, mdbNew
 
