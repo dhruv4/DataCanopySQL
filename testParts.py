@@ -144,7 +144,7 @@ def runExperiment():
 						timing['setup'] = int(line.split('-')[0])
 						break
 
-				print(caching, timing, line)
+				print(caching, timing, l1, line, lines)
 
 				lines.remove(l1)
 				lines.remove(line)
@@ -161,7 +161,7 @@ def runExperiment():
 						timing['level1'] = int(line.split('-')[0])
 						break
 
-				print(caching, timing, line)
+				print(caching, timing, l1, line, lines)
 
 				lines.remove(l1)
 				lines.remove(line)
@@ -178,7 +178,7 @@ def runExperiment():
 						timing['level2'] = int(line.split('-')[0])
 						break
 
-				print(caching, timing, line)
+				print(caching, timing, l1, line, lines)
 
 				lines.remove(l1)
 				lines.remove(line)
@@ -195,7 +195,7 @@ def runExperiment():
 						timing['leveln'] = int(line.split('-')[0])
 						break
 
-				print(caching, timing, line)
+				print(caching, timing, l1, line, lines)
 
 				lines.remove(l1)
 				lines.remove(line)
