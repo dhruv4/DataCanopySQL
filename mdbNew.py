@@ -75,7 +75,7 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 
 			#cur.execute("CREATE FUNCTION BS_STUFF( s1 varchar(32), st int, len int, s3 varchar(32)) RETURNS varchar(32) BEGIN DECLARE res varchar(32), aux varchar(32);  DECLARE ofset int; SET ofset = 0; RETURN res; END;")
 
-			#cur.execute("CREATE FUNCTION GET_CHUNK(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN RETURN PREPARE SELECT col FROM tbl LIMIT ? OFFSET ?; END;")
+			cur.execute("CREATE FUNCTION GET_CHUNK(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN RETURN PREPARE SELECT col FROM tbl LIMIT ? OFFSET ?; END;")
 
 			#cur.execute("CREATE FUNCTION GET_BANANA(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN"
 			#+  "DECLARE stmt1 varchar(255); DECLARE stmt2 varchar(255); DECLARE stmt3 varchar(255); DECLARE stmt4 varchar(255); DECLARE stmt5 varchar(255); DECLARE stmt6 varchar(255); DECLARE stmt7 varchar(255);" 
@@ -84,7 +84,7 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 
 			#cur.execute("CREATE FUNCTION GET_CHUNK(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN PREPARE SELECT col FROM tbl LIMIT ? OFFSET ?; RETURN EXEC (lim, off); END;")
 
-CREATE FUNCTION GET_BANANA(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN PREPARE SELECT col FROM tbl LIMIT ? OFFSET ?; RETURN EXEC (lim, off); END;
+			#CREATE FUNCTION GET_BANANA(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN PREPARE SELECT col FROM tbl LIMIT ? OFFSET ?; RETURN EXEC (lim, off); END;
 
 			#cur.execute("CREATE PROCEDURE GET_CHUNK(lim int, off int, tbl varchar(32), col varchar(32)) BEGIN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
 
@@ -93,7 +93,7 @@ CREATE FUNCTION GET_BANANA(lim int, off int, tbl varchar(32), col varchar(32)) R
 			#cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (clm integer) "
 			#	+"BEGIN RETURN SELECT " + colList[i] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(c*sizeChunk) + "; END;")
 			
-			#cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm), MEDIAN(clm) FROM GET_CHUNK()")
+			cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm), MEDIAN(clm) FROM GET_CHUNK()")
 
 			#removed median for consistency
 
