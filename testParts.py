@@ -100,13 +100,15 @@ def runExperiment():
 		cur = conn.cursor()
 		pgNew.createTable(cur, conn, 'exp', numCols)
 		conn.commit()
-		#pgNew.insertRandData(cur, conn, 'exp', numRows)
+		pgNew.insertRandData(cur, conn, 'exp', numRows)
+		'''
 		if(xaxis == "Cols"):
 			cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numCols) + ".csv' DELIMITER ',' CSV")
 		elif(xaxis == "Rows"):
 			cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 		elif(xaxis == "Chunks"):
 			cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
+		'''
 
 	elif(sys.argv[1] == "mdb"):
 
