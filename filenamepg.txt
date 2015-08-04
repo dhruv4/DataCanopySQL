@@ -1,8 +1,8 @@
-610017--cache-misses
-136.385578--task-clock
-613513--cache-misses
-142.523823--task-clock
-602750--cache-misses
-137.543003--task-clock
-612514--cache-misses
-137.690000--task-clock
+558730--cache-misses
+129.586799--task-clock
+604236--cache-misses
+137.525700--task-clock
+594856--cache-misses
+135.056008--task-clock
+574258--cache-misses
+133.244701--task-clock
