@@ -94,7 +94,7 @@ def runExperiment():
 			if(sys.argv[2] == "setup"):
 				os.system("rm -rf filenamepg.txt")
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
+				os.system("perf stat -e 'cache-misses,task-clock' -x- python3 pgNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['setup'] = time.time() - startTime
 				f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'setup_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 				f.write(sys.argv[3] + "," + str(timing['setup']) + "\n")
@@ -103,7 +103,7 @@ def runExperiment():
 
 			if(sys.argv[2] == "level1"):
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
+				os.system("perf stat -e 'cache-misses,task-clock' -x- python3 pgNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['level1'] = time.time() - startTime
 				f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'level1_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 				f.write(sys.argv[3] + "," + str(timing['level1']) + "\n")
@@ -112,7 +112,7 @@ def runExperiment():
 
 			if(sys.argv[2] == "level2"):
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
+				os.system("perf stat -e 'cache-misses,task-clock' -x- python3 pgNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['level2'] = time.time() - startTime
 				f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'level2_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 				f.write(sys.argv[3] + "," + str(timing['level2']) + "\n")
@@ -124,7 +124,7 @@ def runExperiment():
 				print("numLevels", numLevels)
 				startTime = time.time()
 				if(numLevels > 2):
-					os.system("perf stat -e 'cache-misses' -x- python3 pgNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
+					os.system("perf stat -e 'cache-misses,task-clock' -x- python3 pgNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['leveln'] = time.time() - startTime
 
 				f.write(sys.argv[3] + "," + str(timing['leveln']) + "\n")
@@ -224,7 +224,7 @@ def runExperiment():
 
 			if(sys.argv[2] == "setup"):
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
+				os.system("perf stat -e 'cache-misses,task-clock' -x- python3 mdbNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
 				timing['setup'] = time.time() - startTime
 				f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'setup_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 				f.write(sys.argv[3] + "," + str(timing['setup']) + "\n")
@@ -233,7 +233,7 @@ def runExperiment():
 
 			if(sys.argv[2] == "level1"):
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
+				os.system("perf stat -e 'cache-misses,task-clock' -x- python3 mdbNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
 				timing['level1'] = time.time() - startTime
 				f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'level1_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 				f.write(sys.argv[3] + "," + str(timing['level1']) + "\n")
@@ -242,7 +242,7 @@ def runExperiment():
 
 			if(sys.argv[2] == "level2"):
 				startTime = time.time()
-				os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
+				os.system("perf stat -e 'cache-misses,task-clock' -x- python3 mdbNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
 				timing['level2'] = time.time() - startTime
 				f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'level2_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 				f.write(sys.argv[3] + "," + str(timing['level2']) + "\n")
@@ -254,7 +254,7 @@ def runExperiment():
 				print("numLevels", numLevels)
 				startTime = time.time()
 				if(numLevels > 2):
-					os.system("perf stat -e 'cache-misses' -x- python3 mdbNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
+					os.system("perf stat -e 'cache-misses,task-clock' -x- python3 mdbNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
 				timing['leveln'] = time.time() - startTime
 
 				f.write(sys.argv[3] + "," + str(timing['leveln']) + "\n")
