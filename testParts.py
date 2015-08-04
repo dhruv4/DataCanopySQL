@@ -161,7 +161,7 @@ def runExperiment():
 						timing['level1'] = int(line.split('-')[0])
 						break
 
-				print(caching, timing line)
+				print(caching, timing, line)
 
 				lines.remove(l1)
 				lines.remove(line)
