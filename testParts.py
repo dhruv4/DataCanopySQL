@@ -139,7 +139,7 @@ def runExperiment():
 						f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'setup_pg_cache_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(caching['setup']) + "\n")
 						f.close()
-						l1 = lines
+						l1 = line
 						continue
 					if(caching['setup'] > 1):
 						timing['setup'] = int(line.split('-')[0])
@@ -155,7 +155,7 @@ def runExperiment():
 						f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'level1_pg_cache_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(caching['level1']) + "\n")
 						f.close()
-						l1 = lines
+						l1 = line
 						continue
 					if(caching['level1'] > 1):
 						timing['level1'] = int(line.split('-')[0])
@@ -170,7 +170,7 @@ def runExperiment():
 						f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'level2_pg_cache_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(caching['level2']) + "\n")
 						f.close()
-						l1 = lines
+						l1 = line
 						continue
 					if(caching['level2'] > 1):
 						timing['level2'] = int(line.split('-')[0])
@@ -185,7 +185,7 @@ def runExperiment():
 						f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'leveln_pg_cache_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(caching['leveln']) + "\n")
 						f.close()
-						l1 = lines
+						l1 = line
 						continue
 					if(caching['leveln'] > 1):
 						timing['leveln'] = int(line.split('-')[0])
@@ -262,7 +262,7 @@ def runExperiment():
 						f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'setup_mdb_cache_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'w')
 						f.write(sys.argv[3] + "," + str(caching['setup']) + "\n")
 						f.close()
-						l1 = lines
+						l1 = line
 						continue
 					if(caching['setup'] > 1):
 						timing['setup'] = int(line.split('-')[0])
@@ -278,7 +278,7 @@ def runExperiment():
 						f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'level1_mdb_cache_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(caching['level1']) + "\n")
 						f.close()
-						l1 = lines
+						l1 = line
 						continue
 					if(caching['level1'] > 1):
 						timing['level1'] = int(line.split('-')[0])
@@ -293,7 +293,7 @@ def runExperiment():
 						f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'level2_mdb_cache_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(caching['level2']) + "\n")
 						f.close()
-						l1 = lines
+						l1 = line
 						continue
 					if(caching['level2'] > 1):
 						timing['level2'] = int(line.split('-')[0])
@@ -308,7 +308,7 @@ def runExperiment():
 						f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'leveln_mdb_cache_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(caching['leveln']) + "\n")
 						f.close()
-						l1 = lines
+						l1 = line
 						continue
 					if(caching['leveln'] > 1):
 						timing['leveln'] = int(line.split('-')[0])
