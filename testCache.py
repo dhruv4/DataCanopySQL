@@ -359,7 +359,6 @@ def runExperiment():
 	
 	plt.close()
 
-		
 def runAccessExperiment():
 
 	numTrials = 100
