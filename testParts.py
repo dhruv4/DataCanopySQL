@@ -93,42 +93,21 @@ def runExperiment():
 
 			if(sys.argv[2] == "setup"):
 				os.system("rm -rf filenamepg.txt")
-				startTime = time.time()
 				os.system("perf stat -e 'cache-misses,task-clock' -x- python3 pgNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
-				timing['setup'] = time.time() - startTime
-				f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'setup_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
-				f.write(sys.argv[3] + "," + str(timing['setup']) + "\n")
-				f.close()
 				print("reached 1")
 
 			if(sys.argv[2] == "level1"):
-				startTime = time.time()
 				os.system("perf stat -e 'cache-misses,task-clock' -x- python3 pgNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
-				timing['level1'] = time.time() - startTime
-				f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'level1_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
-				f.write(sys.argv[3] + "," + str(timing['level1']) + "\n")
-				f.close()
 				print("reached 2")
 
 			if(sys.argv[2] == "level2"):
-				startTime = time.time()
 				os.system("perf stat -e 'cache-misses,task-clock' -x- python3 pgNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
-				timing['level2'] = time.time() - startTime
-				f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'level2_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
-				f.write(sys.argv[3] + "," + str(timing['level2']) + "\n")
-				f.close()
 				print("reached n")	
 
 			if(sys.argv[2] == "leveln"):
-				f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'leveln_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 				print("numLevels", numLevels)
-				startTime = time.time()
 				if(numLevels > 2):
 					os.system("perf stat -e 'cache-misses,task-clock' -x- python3 pgNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
-				timing['leveln'] = time.time() - startTime
-
-				f.write(sys.argv[3] + "," + str(timing['leveln']) + "\n")
-				f.close()
 
 				lines = [line.rstrip('\n') for line in open('filenamepg.txt')]
 
@@ -141,6 +120,9 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['setup'] > 1):
+						f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'setup_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
+						f.write(sys.argv[3] + "," + str(timing['setup']) + "\n")
+						f.close()
 						timing['setup'] = float(line.split('-')[0])/1000
 						break
 
@@ -158,6 +140,9 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['level1'] > 1):
+						f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'level1_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
+						f.write(sys.argv[3] + "," + str(timing['level1']) + "\n")
+						f.close()
 						timing['level1'] = float(line.split('-')[0])/1000
 						break
 
@@ -175,6 +160,9 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['level2'] > 1):
+						f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'level2_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
+						f.write(sys.argv[3] + "," + str(timing['level2']) + "\n")
+						f.close()
 						timing['level2'] = float(line.split('-')[0])/1000
 						break
 
@@ -192,6 +180,9 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['leveln'] > 1):
+						f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'leveln_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
+						f.write(sys.argv[3] + "," + str(timing['leveln']) + "\n")
+						f.close()
 						timing['leveln'] = float(line.split('-')[0])/1000
 						break
 
@@ -223,45 +214,23 @@ def runExperiment():
 
 		elif(sys.argv[1] == "mdb"):
 
-			os.system("rm -rf filenamemdb.txt")
-
 			if(sys.argv[2] == "setup"):
-				startTime = time.time()
+				os.system("rm -rf filenamemdb.txt")
 				os.system("perf stat -e 'cache-misses,task-clock' -x- python3 mdbNew.py setup exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
-				timing['setup'] = time.time() - startTime
-				f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'setup_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
-				f.write(sys.argv[3] + "," + str(timing['setup']) + "\n")
-				f.close()
 				print("reached 1")
 
 			if(sys.argv[2] == "level1"):
-				startTime = time.time()
 				os.system("perf stat -e 'cache-misses,task-clock' -x- python3 mdbNew.py level1 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
-				timing['level1'] = time.time() - startTime
-				f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'level1_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
-				f.write(sys.argv[3] + "," + str(timing['level1']) + "\n")
-				f.close()
 				print("reached 2")
 
 			if(sys.argv[2] == "level2"):
-				startTime = time.time()
 				os.system("perf stat -e 'cache-misses,task-clock' -x- python3 mdbNew.py level2 exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
-				timing['level2'] = time.time() - startTime
-				f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'level2_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
-				f.write(sys.argv[3] + "," + str(timing['level2']) + "\n")
-				f.close()
 				print("reached n")	
 
 			if(sys.argv[2] == "leveln"):
-				f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'leveln_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 				print("numLevels", numLevels)
-				startTime = time.time()
 				if(numLevels > 2):
 					os.system("perf stat -e 'cache-misses,task-clock' -x- python3 mdbNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
-				timing['leveln'] = time.time() - startTime
-
-				f.write(sys.argv[3] + "," + str(timing['leveln']) + "\n")
-				f.close()
 
 				lines = [line.rstrip('\n') for line in open('filenamemdb.txt')]
 
@@ -274,9 +243,11 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['setup'] > 1):
+						f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'setup_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
+						f.write(sys.argv[3] + "," + str(timing['setup']) + "\n")
+						f.close()
 						timing['setup'] = float(line.split('-')[0])/1000
 						break
-
 
 				lines.remove(l1)
 				lines.remove(line)
@@ -290,6 +261,9 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['level1'] > 1):
+						f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'level1_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
+						f.write(sys.argv[3] + "," + str(timing['level1']) + "\n")
+						f.close()
 						timing['level1'] = float(line.split('-')[0])/1000
 						break
 
@@ -305,6 +279,9 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['level2'] > 1):
+						f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'level2_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
+						f.write(sys.argv[3] + "," + str(timing['level2']) + "\n")
+						f.close()
 						timing['level2'] = float(line.split('-')[0])/1000
 						break
 
@@ -320,6 +297,9 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['leveln'] > 1):
+						f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'leveln_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
+						f.write(sys.argv[3] + "," + str(timing['leveln']) + "\n")
+						f.close()
 						timing['leveln'] = float(line.split('-')[0])/1000
 						break
 
