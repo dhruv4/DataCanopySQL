@@ -86,11 +86,11 @@ def runExperiment():
 	vals = []
 
 	if(xaxis == "Chunks"):
-		numChunks = sys.argv[3]
+		numChunks = int(sys.argv[3])
 	elif(xaxis == "Cols"):
-		numCols = sys.argv[3]
+		numCols = int(sys.argv[3])
 	elif(xaxis == "Rows"):
-		numRows = sys.argv[3]
+		numRows = int(sys.argv[3])
 			
 	startTime = time.time()
 
