@@ -37,7 +37,7 @@ def runExperiment():
 			
 	startTime = time.time()
 
-	if(sys.argv[1] == "pg"):
+	if(sys.argv[1] == "pg" and sys.argv[2] == "setup"):
 
 		conn = pg.connect(dbname="postgres")
 		cur = conn.cursor()
@@ -53,7 +53,7 @@ def runExperiment():
 			cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 		'''
 
-	elif(sys.argv[1] == "mdb"):
+	elif(sys.argv[1] == "mdb" and sys.argv[2] == "setup"):
 
 		conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 		cur = conn.cursor()
