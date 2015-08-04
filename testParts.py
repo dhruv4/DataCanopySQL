@@ -120,10 +120,10 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['setup'] > 1):
+						timing['setup'] = float(line.split('-')[0])/1000
 						f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'setup_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(timing['setup']) + "\n")
 						f.close()
-						timing['setup'] = float(line.split('-')[0])/1000
 						break
 
 				print(caching, timing, l1, line, lines)
@@ -140,10 +140,10 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['level1'] > 1):
+						timing['level1'] = float(line.split('-')[0])/1000
 						f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'level1_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(timing['level1']) + "\n")
 						f.close()
-						timing['level1'] = float(line.split('-')[0])/1000
 						break
 
 				print(caching, timing, l1, line, lines)
@@ -160,10 +160,10 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['level2'] > 1):
+						timing['level2'] = float(line.split('-')[0])/1000
 						f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'level2_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(timing['level2']) + "\n")
 						f.close()
-						timing['level2'] = float(line.split('-')[0])/1000
 						break
 
 				print(caching, timing, l1, line, lines)
@@ -180,10 +180,10 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['leveln'] > 1):
+						timing['leveln'] = float(line.split('-')[0])/1000
 						f = open('pgresults/' + Config.get("Experiment Config", "Title") + 'leveln_pg_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(timing['leveln']) + "\n")
 						f.close()
-						timing['leveln'] = float(line.split('-')[0])/1000
 						break
 
 				print(caching, timing, l1, line, lines)
@@ -243,10 +243,10 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['setup'] > 1):
+						timing['setup'] = float(line.split('-')[0])/1000
 						f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'setup_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(timing['setup']) + "\n")
 						f.close()
-						timing['setup'] = float(line.split('-')[0])/1000
 						break
 
 				lines.remove(l1)
@@ -261,10 +261,10 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['level1'] > 1):
+						timing['level1'] = float(line.split('-')[0])/1000
 						f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'level1_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(timing['level1']) + "\n")
 						f.close()
-						timing['level1'] = float(line.split('-')[0])/1000
 						break
 
 				lines.remove(l1)
@@ -279,10 +279,10 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['level2'] > 1):
+						timing['level2'] = float(line.split('-')[0])/1000
 						f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'level2_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(timing['level2']) + "\n")
 						f.close()
-						timing['level2'] = float(line.split('-')[0])/1000
 						break
 
 				lines.remove(l1)
@@ -297,10 +297,10 @@ def runExperiment():
 						l1 = line
 						continue
 					if(caching['leveln'] > 1):
+						timing['leveln'] = float(line.split('-')[0])/1000
 						f = open('mdbresults/' + Config.get("Experiment Config", "Title") + 'leveln_mdb_time_' + Config.get("Experiment Config", "XAxis") +  '.txt', 'a')
 						f.write(sys.argv[3] + "," + str(timing['leveln']) + "\n")
 						f.close()
-						timing['leveln'] = float(line.split('-')[0])/1000
 						break
 
 				lines.remove(l1)
