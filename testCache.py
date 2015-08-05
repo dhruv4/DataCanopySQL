@@ -289,6 +289,7 @@ def runExperiment():
 						caching['leveln'] += int(line.split('-')[0])
 						break
 
+				print(lines, line)
 				lines.remove(line)
 	
 			caching['total'] += caching['setup'] + caching['level1'] + caching['level2'] + caching['leveln']
