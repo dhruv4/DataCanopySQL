@@ -267,21 +267,21 @@ def runExperiment():
 					if(line[-12:] == "cache-misses"):
 						caching['setup'] += int(line.split('-')[0])
 						break
-
+				print(lines, line)
 				lines.remove(line)
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
 						caching['level1'] += int(line.split('-')[0])
 						break
-
+				print(lines, line)
 				lines.remove(line)
 
 				for line in lines:
 					if(line[-12:] == "cache-misses"):
 						caching['level2'] += int(line.split('-')[0])
 						break
-
+				print(lines, line)
 				lines.remove(line)
 
 				for line in lines:
