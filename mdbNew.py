@@ -71,35 +71,8 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 	for c in range(numChunks):
 		for i in range(numCols):
 
-			#CREATE FUNCTION fWedgeV4(x1 float, y1 float, z1 float, x2 float, y2 int, z2 int) RETURNS TABLE (x float, y float, z float) RETURN TABLE (SELECT (y2) as x, x2 as y, z2 as z LIMIT y2 OFFSET z2 );
-
-			#cur.execute("CREATE FUNCTION BS_STUFF( s1 varchar(32), st int, len int, s3 varchar(32)) RETURNS varchar(32) BEGIN DECLARE res varchar(32), aux varchar(32);  DECLARE ofset int; SET ofset = 0; RETURN res; END;")
-
-			cur.execute("CREATE FUNCTION GET_CHUNK(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN RETURN PREPARE SELECT col FROM tbl LIMIT ? OFFSET ?; END;")
-
-			#cur.execute("CREATE FUNCTION GET_BANANA(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN"
-			#+  "DECLARE stmt1 varchar(255); DECLARE stmt2 varchar(255); DECLARE stmt3 varchar(255); DECLARE stmt4 varchar(255); DECLARE stmt5 varchar(255); DECLARE stmt6 varchar(255); DECLARE stmt7 varchar(255);" 
-			#+ " SET stmt1 = concat('SELECT', col); SET stmt2 = concat('FROM', tbl); SET stmt3 = concat('LIMIT', lim); SET stmt4 = concat('OFFSET', off); SET stmt5 = concat(@stmt1, @stmt2); SET stmt6 = concat(@stmt3, @stmt4); SET stmt7 = concat(@stmt5, @stmt6);"
-			#+ " PREPARE stmt FROM @stmt7; EXECUTE stmt; RETURN col; END;")
-
-			#cur.execute("CREATE FUNCTION GET_CHUNK(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN PREPARE SELECT col FROM tbl LIMIT ? OFFSET ?; RETURN EXEC (lim, off); END;")
-
-			#CREATE FUNCTION GET_BANANA(lim int, off int, tbl varchar(32), col varchar(32)) RETURNS TABLE (clm int) BEGIN PREPARE SELECT col FROM tbl LIMIT ? OFFSET ?; RETURN EXEC (lim, off); END;
-
-			#cur.execute("CREATE PROCEDURE GET_CHUNK(lim int, off int, tbl varchar(32), col varchar(32)) BEGIN SELECT col FROM tbl LIMIT lim OFFSET off; END;")
-
-			##^^This is the statement that SHOULD work but doesn't because monetdb doesn't recognize the variables like "col", "lim"
-			
-			#cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (clm integer) "
-			#	+"BEGIN RETURN SELECT " + colList[i] + " FROM " + table + " LIMIT " + str(sizeChunk) + " OFFSET " + str(c*sizeChunk) + "; END;")
-			
-			cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm), MEDIAN(clm) FROM GET_CHUNK()")
-
-			#removed median for consistency
-
-			#cur.execute("SELECT AVG(clm), STDDEV_SAMP(clm), VAR_SAMP(clm) FROM GET_CHUNK()")
-
-			cur.execute("SELECT AVG(col), STDDEV_SAMP(col), VAR_SAMP(col) FROM GET_CHUNK(" + str(sizeChunk) + ", " + str(c*sizeChunk) + ", '" + table + "', '" + colList [i] + "')")
+			cur.execute("SELECT AVG(" + colList[i] + "), STDDEV_SAMP(" + colList[i] + "), VAR_SAMP(" + colList[i] + ") FROM (SELECT " + colList[i] + ", ROW_NUMBER() OVER() as rnum FROM " 
+				+ table + ") as foo WHERE rnum > " + str(c*sizeChunk) + " AND rnum < " + str(sizeChunk + c*sizeChunk))
 
 			#avg, std, var, med = cur.fetchone()
 			avg, std, var = cur.fetchone()
@@ -116,8 +89,6 @@ def createDCTableLevel1(table, levels, numChunks, numCols, numRows):
 
 			cur.execute("INSERT INTO dc_" + table + " (col0, col1, col2, col3, col4, col5) VALUES (%s, %s, %s, %s, %s, %s)",
 				[ID, avg, std,var,med,mod])
-
-			cur.execute("DROP FUNCTION GET_CHUNK()")
 
 	conn.commit()
 
@@ -136,16 +107,11 @@ def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 		for i in range(numCols - 1):
 			for j in range(i+1, numCols):
 
-				cur.execute("CREATE FUNCTION GET_CHUNK() RETURNS TABLE (cl1 bigint, cl2 bigint) "
-					+ "BEGIN RETURN SELECT " + colList[i] + "," + colList[j] + " FROM " + table 
-					+ " LIMIT " + str(sizeChunk) + " OFFSET " + str(c*sizeChunk) + "; END;")
-				
-				cur.execute("SELECT CORR(cl1, cl2) FROM GET_CHUNK()")
+				cur.execute("SELECT CORR(cl1, cl2) FROM (SELECT " + colList[i] + " as cl1," + colList[j] + " as cl2, ROW_NUMBER() OVER() as rnum FROM " 
+					+ table + ") as foo WHERE rnum > " + str(c*sizeChunk) + " AND rnum < " + str(sizeChunk + c*sizeChunk))
 
 				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
 					[idChunkCombine(2**i + 2**j, c, numChunks),float(cur.fetchone()[0])])
-
-				cur.execute("DROP FUNCTION GET_CHUNK()")
 
 	conn.commit()
 
@@ -207,13 +173,10 @@ def test():
 	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
 
-	print(checkLevel2(9))
-
-	'''
 	createTable(cur, conn, "testa", numCols)
 	insertRandData(cur, conn, "testa", numRows)
 	conn.commit()
-	'''
+
 	createDCTableSetup("testa", numCols, numChunks, numCols, numRows)
 	print("setup done")
 	createDCTableLevel1("testa", numCols, numChunks, numCols, numRows)
