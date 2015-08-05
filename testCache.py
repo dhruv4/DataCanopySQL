@@ -179,7 +179,7 @@ def runExperiment():
 				print("reached n")
 				print("numLevels", numLevels)
 				startTime = time.time()
-				if(numLevels > 2):
+				if(numLevels >= 2):
 					os.system("perflock perf stat -e 'cache-misses' -x- python3 pgNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamepg.txt 2>&1")
 				timing['leveln'] += time.time() - startTime
 				'''
@@ -255,7 +255,7 @@ def runExperiment():
 				print("reached n")	
 				print("numLevels", numLevels)
 				startTime = time.time()
-				if(numLevels > 2):
+				if(numLevels >= 2):
 					os.system("perflock perf stat -e 'cache-misses' -x- python3 mdbNew.py leveln exp " + str(numLevels) + " " + str(numChunks) + " " + str(numCols) + " " + str(numRows) + " >> filenamemdb.txt 2>&1")
 				timing['leveln'] += time.time() - startTime
 
