@@ -7,6 +7,14 @@ from numpy import *
 import matplotlib.pyplot as plt
 import pgNew, mdbNew
 
+'''
+@PARAMS:
+arg1 = database
+arg2 = level
+arg3 = value
+'''
+
+
 def runExperiment():
 	
 	Config = configparser.ConfigParser()
