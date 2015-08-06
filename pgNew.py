@@ -176,7 +176,7 @@ def test():
 
 	print(checkLevel2(9))
 
-	createTable(cur, conn, "test", numCols + 1)
+	createTable(cur, conn, "test", numCols)
 	#insertRandData(cur, conn, "test", numRows)
 	cur.execute("COPY test FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 	conn.commit()
