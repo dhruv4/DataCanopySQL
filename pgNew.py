@@ -181,17 +181,25 @@ def test():
 	cur.execute("COPY test FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 	conn.commit()
 
+	totalStart = time.time()
+
+
+	start = time.time()
+
 	createDCTableSetup("test", numCols, numChunks, numCols, numRows)
-	print("setup done")
+	print("setup done", time.time() - start)
+	start = time.time()
 	createDCTableLevel1("test", numCols, numChunks, numCols, numRows)
-	print("level 1 made")
+	print("level 1 made", time.time() - start)
+	start = time.time()
 	createDCTableLevel2("test", numCols, numChunks, numCols, numRows)
-	print("level 2 made")
+	print("level 2 made", time.time() - start)
+	start = time.time()
 	createDCTableLeveln("test", numCols, numChunks, numCols, numRows)
-	print("done")
+	print("done", time.time() - start)
 
 	conn.commit()
-	print(time.time() - startTime)
+	print(time.time() - totalStart)
 
 def exp():
 	
