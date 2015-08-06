@@ -109,7 +109,7 @@ def createDCTableLevel2(table, levels, numChunks, numCols, numRows):
 		for i in range(numCols - 1):
 			for j in range(i+1, numCols):
 
-				cur.execute("SELECT CORR(cl1, cl2) FROM (SELECT " + colList[i] + " as cl1," + colList[j] + " as cl2, ROW_NUMBER() OVER() as rnum FROM " 
+				cur.execute("SELECT CORR(cl1, cl2) FROM (SELECT CAST(" + colList[i] + " as bigint) as cl1, CAST(" + colList[j] + " as bigint) as cl2, ROW_NUMBER() OVER() as rnum FROM " 
 					+ table + ") as foo WHERE rnum > " + str(c*sizeChunk) + " AND rnum < " + str(sizeChunk + c*sizeChunk))
 
 				cur.execute("INSERT INTO dc_" + table + " (col0, col1) VALUES (%s, %s)", 
@@ -170,14 +170,19 @@ def insertRandData(cur, conn, table, length):
 def test():
 	numChunks = 10
 	numCols = 10
-	numRows = 150000
+	numRows = 1000000
+
+	numChunks = int(numChunks)
+	print(numChunks)
 
 	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
 
+	'''
 	createTable(cur, conn, "testa", numCols)
 	insertRandData(cur, conn, "testa", numRows)
 	conn.commit()
+	'''
 
 	createDCTableSetup("testa", numCols, numChunks, numCols, numRows)
 	print("setup done")

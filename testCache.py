@@ -163,12 +163,6 @@ def runExperiment():
 
 				os.system("rm -rf filenamepg.txt")
 
-				if(math.ceil(numRows/numChunks) > 15000):
-					numChunks = numRows/15000
-					if(isinstance(numChunks, float)):
-						numChunks = numRows/10000
-					#monet can't support more than a certain chunk size, so we reset the number of chunks to fix that
-
 				totalStart = time.time()
 				
 				startTime = time.time()
