@@ -1,4 +1,19 @@
-629209--cache-misses
-653356--cache-misses
-663848--cache-misses
-83503944--cache-misses
+670223--cache-misses
+Traceback (most recent call last):
+  File "mdbNew.py", line 210, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "mdbNew.py", line 204, in exp
+    createDCTableLevel1(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "mdbNew.py", line 77, in createDCTableLevel1
+    + table + ") as foo WHERE rnum > " + str(c*sizeChunk) + " AND rnum < " + str(sizeChunk + c*sizeChunk))
+  File "/usr/local/lib/python3.2/dist-packages/monetdb/sql/cursors.py", line 175, in execute
+    block = self.connection.execute(query)
+  File "/usr/local/lib/python3.2/dist-packages/monetdb/sql/connections.py", line 138, in execute
+    return self.command('s' + query + ';')
+  File "/usr/local/lib/python3.2/dist-packages/monetdb/sql/connections.py", line 143, in command
+    return self.mapi.cmd(command)
+  File "/usr/local/lib/python3.2/dist-packages/monetdb/mapi.py", line 202, in cmd
+    raise OperationalError(response[1:])
+monetdb.exceptions.OperationalError: Type mismatch
+
+960686--cache-misses
