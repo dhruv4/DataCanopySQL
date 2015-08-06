@@ -168,8 +168,8 @@ def insertRandData(cur, conn, table, length):
 
 def test():
 	numChunks = 10
-	numCols = 15
-	numRows = 10000
+	numCols = 10
+	numRows = 1000000000
 
 	conn = pg.connect(dbname="postgres")
 	cur = conn.cursor()
@@ -177,7 +177,8 @@ def test():
 	print(checkLevel2(9))
 
 	createTable(cur, conn, "test", numCols + 1)
-	insertRandData(cur, conn, "test", numRows)
+	#insertRandData(cur, conn, "test", numRows)
+	cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 	conn.commit()
 
 	createDCTableSetup("test", numCols, numChunks, numCols, numRows)
@@ -203,8 +204,8 @@ def exp():
 	elif(sys.argv[1] == "leveln"):
 		createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
 
-if __name__=="__main__": startTime = time.time(); exp()
-#if __name__=="__main__": startTime = time.time(); test()
+#if __name__=="__main__": startTime = time.time(); exp()
+if __name__=="__main__": startTime = time.time(); test()
 
 
 
