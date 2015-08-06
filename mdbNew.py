@@ -48,11 +48,13 @@ def createDCTableSetup(table, levels, numChunks, numCols, numRows):
 	
 	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
-
+	'''
 	if(numCols + math.ceil(math.log(numChunks, 2)) >= 32):
 		createTable(cur, conn, 'dc_' + table, 6, 1, 1)
 	else:
 		createTable(cur, conn, 'dc_' + table, 6, 1)
+	'''
+	createTable(cur, conn, 'dc_' + table, 6, 1, 1)
 
 	conn.commit()
 
@@ -167,8 +169,8 @@ def insertRandData(cur, conn, table, length):
 
 def test():
 	numChunks = 10
-	numCols = 5
-	numRows = 1000
+	numCols = 10
+	numRows = 150000
 
 	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
 	cur = conn.cursor()
@@ -200,8 +202,8 @@ def exp():
 	elif(sys.argv[1] == "leveln"):
 		createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
 
-if __name__=="__main__": startTime = time.time(); exp()
-#if __name__=="__main__": startTime = time.time(); test()
+#if __name__=="__main__": startTime = time.time(); exp()
+if __name__=="__main__": startTime = time.time(); test()
 
 
 
