@@ -178,7 +178,7 @@ def test():
 
 	createTable(cur, conn, "test", numCols + 1)
 	#insertRandData(cur, conn, "test", numRows)
-	cur.execute("COPY exp FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
+	cur.execute("COPY test FROM '/home/gupta/DataCanopySQL/test" + str(numRows) + ".csv' DELIMITER ',' CSV")
 	conn.commit()
 
 	createDCTableSetup("test", numCols, numChunks, numCols, numRows)
