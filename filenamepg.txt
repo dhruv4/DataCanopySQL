@@ -1,4 +1,20 @@
-578384--cache-misses
-587798--cache-misses
-651151--cache-misses
-3802763--cache-misses
+555153--cache-misses
+879044--cache-misses
+Traceback (most recent call last):
+  File "pgNew.py", line 206, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgNew.py", line 202, in exp
+    createDCTableLevel2(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgNew.py", line 115, in createDCTableLevel2
+    [idChunkCombine(2**i + 2**j, c, numChunks),float(cur.fetchone()[0])])
+TypeError: float() argument must be a string or a number
+1406154--cache-misses
+Traceback (most recent call last):
+  File "pgNew.py", line 206, in <module>
+    if __name__=="__main__": startTime = time.time(); exp()
+  File "pgNew.py", line 204, in exp
+    createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+  File "pgNew.py", line 138, in createDCTableLeveln
+    vals.append(cur.fetchone()[0])	
+TypeError: 'NoneType' object is not subscriptable
+568975--cache-misses
