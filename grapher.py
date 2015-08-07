@@ -158,26 +158,26 @@ def cgraph(xtitle, name, db, c=0, ylog=0):
 		plt.xscale('log')
 
 	if(c == 1):	
-		if(xtitle =="rows"):
+		if(xtitle =="Rows"):
 			plt.title("Varying Number of Rows vs Cache Misses")
 			plt.xlabel("Number of Rows")
-		if(xtitle =="cols"):
+		if(xtitle =="Cols"):
 			plt.title("Varying Number of Columns vs Cache Misses")
 			plt.xlabel("Number of Columns")
-		if(xtitle =="chunks"):
+		if(xtitle =="Chunks"):
 			plt.title("Varying Number of Chunks vs Cache Misses")
 			plt.xlabel("Number of Chunks")
 
 		plt.ylabel('Cache Misses')
 		
 	else:
-		if(xtitle =="rows"):
+		if(xtitle =="Rows"):
 			plt.title("Varying Number of Rows vs Time (sec)")
 			plt.xlabel("Number of Rows")
-		if(xtitle =="cols"):
+		if(xtitle =="Cols"):
 			plt.title("Varying Number of Columns vs Time (sec)")
 			plt.xlabel("Number of Columns")
-		if(xtitle =="chunks"):
+		if(xtitle =="Chunks"):
 			plt.title("Varying Number of Chunks vs Time (sec)")
 			plt.xlabel("Number of Chunks")
 
@@ -200,7 +200,7 @@ def cgraph(xtitle, name, db, c=0, ylog=0):
 
 def compare():
 
-	#arg1 = Test, Test2
+	#arg1 = Test, Test2, TestNew
 	#arg2 = Rows, Cols, Chunks
 
 	levels = ['dc', 'pg', 'mdb']
@@ -237,7 +237,7 @@ def compare():
 
 	plt.close()
 
-main()
-#compare()
+#main()
+compare()
 
 
