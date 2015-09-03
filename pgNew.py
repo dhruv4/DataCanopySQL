@@ -183,7 +183,6 @@ def test():
 
 	totalStart = time.time()
 
-
 	start = time.time()
 
 	createDCTableSetup("test", numCols, numChunks, numCols, numRows)
@@ -201,6 +200,19 @@ def test():
 	conn.commit()
 	print(time.time() - totalStart)
 
+def banana():
+	numChunks = 10
+	numCols = 10
+	numRows = 10000
+
+	conn = pg.connect(dbname="postgres")
+	cur = conn.cursor()
+
+	createTable(cur, conn, "banana", numCols)
+	insertRandData(cur, conn, "banana", numRows)
+
+	conn.commit()
+
 def exp():
 	
 	if(sys.argv[1] == "setup"):
@@ -213,7 +225,9 @@ def exp():
 		createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
 
 #if __name__=="__main__": startTime = time.time(); exp()
-if __name__=="__main__": startTime = time.time(); test()
+#if __name__=="__main__": startTime = time.time(); test()
+if __name__=="__main__": startTime = time.time(); banana()
+
 
 
 
