@@ -196,6 +196,19 @@ def test():
 	conn.commit()
 	print(time.time() - startTime)
 
+def banana():
+	numChunks = 10
+	numCols = 10
+	numRows = 10000
+
+	conn = mdb.connect(username="monetdb", password="monetdb", database="test")
+	cur = conn.cursor()
+
+	createTable(cur, conn, "banana", numCols)
+	insertRandData(cur, conn, "banana", numRows)
+
+	conn.commit()
+
 def exp():
 	
 	if(sys.argv[1] == "setup"):
@@ -207,8 +220,9 @@ def exp():
 	elif(sys.argv[1] == "leveln"):
 		createDCTableLeveln(sys.argv[2], int(sys.argv[3]),int( sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
 
-if __name__=="__main__": startTime = time.time(); exp()
+#if __name__=="__main__": startTime = time.time(); exp()
 #if __name__=="__main__": startTime = time.time(); test()
+if __name__=="__main__": startTime = time.time(); banana()
 
 
 

@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <libpq-fe.h>
+#include <mapi.h>
 
 typedef enum { false, true } bool;
 
@@ -17,11 +17,45 @@ bool checkLevel2(long long x){
 	return __builtin_popcount(x)==2;
 		
 }
-void createTable(PGconn * conn, char* name, int numCol, bool b, bool l){
+void die(Mapi dbh, MapiHdl hdl)
+{
+	if (hdl != NULL) {
+		mapi_explain_query(hdl, stderr);
+		do {
+			if (mapi_result_error(hdl) != NULL)
+				mapi_explain_result(hdl, stderr);
+		} while (mapi_next_result(hdl) == 1);
+		mapi_close_handle(hdl);
+		mapi_destroy(dbh);
+	} else if (dbh != NULL) {
+		mapi_explain(dbh, stderr);
+		mapi_destroy(dbh);
+	} else {
+		fprintf(stderr, "command failed\n");
+	}
+	exit(-1);
+}
+
+MapiHdl query(Mapi dbh, char *q)
+{
+	MapiHdl ret = NULL;
+	if ((ret = mapi_query(dbh, q)) == NULL || mapi_error(dbh) != MOK)
+		die(dbh, ret);
+	return(ret);
+}
+
+void update(Mapi dbh, char *q)
+{
+	MapiHdl ret = query(dbh, q);
+	if (mapi_close_handle(ret) != MOK){
+		die(dbh, ret);
+	}
+}
+
+void createTable(Mapi dbh, char* name, int numCol, bool b, bool l){
 	
 	char cols[255] = "(", comd[255] = "CREATE TABLE ", dbl[255] = "%d double precision,", itgr[255] = "%d int,";
 	int x;
-	PGresult * result;
 
 	if(b){
 		if(l){
@@ -38,7 +72,7 @@ void createTable(PGconn * conn, char* name, int numCol, bool b, bool l){
 
 	} else {
 		for(x = 0; x < numCol; x++){
-			strcat(cols, "col");
+			strcat(cols, " col");
 			sprintf(itgr, itgr, x);
 			strcat(cols, itgr);
 			strcpy(itgr, "%d int,");
@@ -53,18 +87,8 @@ void createTable(PGconn * conn, char* name, int numCol, bool b, bool l){
 
 	strcat(comd, cols);
 
-	if((result = PQexec( conn, comd )) == NULL){
-		printf("well that was null\n" );
-	}
+	update(dbh, comd);
 
-	if (PQresultStatus(result) != PGRES_TUPLES_OK && strlen(PQerrorMessage(conn)) > 2)
-    {
-        printf("CREATE TABLE failed: %s\n", PQerrorMessage(conn));
-        PQclear(result);
-        //exit(0);
-    } else {
-		PQclear(result);
-	}
 }
 /*
 void insertRandData(PGconn* conn, char* table, int length){
@@ -97,47 +121,43 @@ int idChunkCombine(long long idn, int chunk, int numChunks){
 
 void createDCTableSetup(char* table, int levels, int numChunks, int numCols, int numRows){
 	
-	PGconn * conn;
-	conn = PQconnectdb( "dbname=postgres" );
+	Mapi dbh;
+	dbh = mapi_connect("dhruv-VirtualBox", 50000,"monetdb", "monetdb", "sql", "test");
 
 	char dc[255];
 
 	sprintf(dc, "dc_%s", table);
 
 	if (numCols + (int)ceil(log(numChunks)/log(2)) >= 32){
-		createTable(conn, dc, 6, true, true);
+		createTable(dbh, dc, 6, true, true);
 	} else {
 
-		createTable(conn, dc, 6, true, false);
+		createTable(dbh, dc, 6, true, false);
 	}
 
-	PQfinish(conn);
+	mapi_disconnect(dbh);
 }
+
 int createDCTableLevel1(char* table, int levels, int numChunks, int numCols, int numRows){
 
-	PGconn * conn;
-	conn = PQconnectdb( "dbname=postgres" );
-
-	PGresult * result;
+	Mapi dbh;
+	dbh = mapi_connect("dhruv-VirtualBox", 50000,"monetdb", "monetdb", "sql", "test");
+	MapiHdl hdl = NULL;
 
 	char colcmd[255];
 
-	sprintf(colcmd, "SELECT column_name from information_schema.columns where table_name='%s'", table);
+	sprintf(colcmd, "SELECT name FROM sys._columns WHERE table_id = (SELECT id FROM sys._tables WHERE name='%s')", table);
 
-	if(( result = PQexec( conn, colcmd )) == NULL && strlen(PQerrorMessage(conn)) > 2)   {
-	    printf( "%s\n", PQerrorMessage( conn ));
-	}
+	hdl = query(dbh, colcmd);
 
 	char colList[numCols][256];
 
-	int i;
+	int i = 0;
 
-	for (i = 0; i < numCols; ++i)
-	{
-		strcpy(colList[i], PQgetvalue( result, i, 0 ));
+	while (mapi_fetch_row(hdl)) {
+		strcpy(colList[i], mapi_fetch_field(hdl, 0));
+		i++;
 	}
-
-	PQclear(result);
 
 	int maxRows = (pow(2,numCols) - 1)*numChunks;
 	int sizeChunk = (int)ceil(numRows/numChunks);
@@ -148,19 +168,17 @@ int createDCTableLevel1(char* table, int levels, int numChunks, int numCols, int
 	for(c = 0; c < numChunks; c++){
 		for(i = 0; i < numCols; i++){
 			
-			sprintf(statcmd, "SELECT AVG(ss), STDDEV(ss), VAR_SAMP(ss) FROM (SELECT %s AS ss FROM %s LIMIT %d OFFSET %d) as foo", colList[i], table, sizeChunk, c*sizeChunk);
+			sprintf(statcmd, "SELECT AVG(%s), STDDEV_SAMP(%s), VAR_SAMP(%s) FROM (SELECT %s, ROW_NUMBER() OVER() as rnum FROM %s) AS foo WHERE rnum > %d AND rnum < %d", colList[i], colList[i], colList[i], colList[i], table, c*sizeChunk, sizeChunk + c*sizeChunk);
 
-			if(( result = PQexec( conn, statcmd )) == NULL && strlen(PQerrorMessage(conn)) > 2)   {
-				printf( "%s\n", PQerrorMessage( conn ));
-			}
+			hdl = query(dbh, statcmd);
 
-			avg = atof(PQgetvalue(result, 0, 0));
-			std = atof(PQgetvalue(result, 0, 1));
-			var = atof(PQgetvalue(result, 0, 2));
+			mapi_fetch_row(hdl);
+
+			avg = atof(mapi_fetch_field(hdl, 0));
+			std = atof(mapi_fetch_field(hdl, 1));
+			var = atof(mapi_fetch_field(hdl, 2));
 
 			//printf("%f %f %f\n", avg, std, var);
-
-			PQclear(result);
 
 			med = 0; //median
 
@@ -175,49 +193,33 @@ int createDCTableLevel1(char* table, int levels, int numChunks, int numCols, int
 
 			sprintf(inscmd, "INSERT INTO dc_%s (col0, col1, col2, col3, col4, col5) VALUES (%d, %f, %f, %f, %f, %f)", table, ID, avg, std, var, med, mod);
 
-			if((result = PQexec( conn, inscmd )) == NULL){
-				printf("well that was null\n" );
-			}
-
-			if (PQresultStatus(result) != PGRES_TUPLES_OK && strlen(PQerrorMessage(conn)) > 2)
-		    {
-		        printf("INSERT failed: %s\n", PQerrorMessage(conn));
-		        PQclear(result);
-		        //exit(0);
-		    } else {
-		    	PQclear(result);
-		    }
+			update(dbh, inscmd);
 
 		}
 	}
-	PQfinish(conn);
+	mapi_close_handle(hdl);
+	mapi_disconnect(dbh);
 }
-
 int createDCTableLevel2(char* table, int levels, int numChunks, int numCols, int numRows){
 	
-	PGconn * conn;
-	conn = PQconnectdb( "dbname=postgres" );
-
-	PGresult * result;
+	Mapi dbh;
+	dbh = mapi_connect("dhruv-VirtualBox", 50000,"monetdb", "monetdb", "sql", "test");
+	MapiHdl hdl = NULL;
 
 	char colcmd[255];
 
-	sprintf(colcmd, "SELECT column_name from information_schema.columns where table_name='%s'", table);
+	sprintf(colcmd, "SELECT name FROM sys._columns WHERE table_id = (SELECT id FROM sys._tables WHERE name='%s')", table);
 
-	if(( result = PQexec( conn, colcmd )) == NULL && strlen(PQerrorMessage(conn)) > 2)   {
-	    printf( "%s\n", PQerrorMessage( conn ));
-	}
+	hdl = query(dbh, colcmd);
 
 	char colList[numCols][256];
 
-	int c, i, j;
+	int c, i = 0, j;
 
-	for (i = 0; i < numCols; ++i)
-	{
-		strcpy(colList[i], PQgetvalue( result, i, 0 ));
+	while (mapi_fetch_row(hdl)) {
+		strcpy(colList[i], mapi_fetch_field(hdl, 0));
+		i++;
 	}
-
-	PQclear(result);
 
 	char statcmd[255], inscmd[255];
 
@@ -230,44 +232,31 @@ int createDCTableLevel2(char* table, int levels, int numChunks, int numCols, int
 		for(i = 0; i < numCols - 1; i++){
 			for(j = i+1; j < numCols; j++){
 
-				sprintf(statcmd, "SELECT CORR(x, y) FROM (SELECT cast(%s as double precision) AS x, cast(%s as double precision) AS y FROM %s LIMIT %d OFFSET %d) as foo", 
-					colList[i], colList[j], table, sizeChunk, c*sizeChunk);
+				//CAST TO DOUBLE PRECISION INSTEAD OF BIGINT???? NEED BIGGER THAN DOUBLE??
 
-				if(( result = PQexec( conn, statcmd )) == NULL && strlen(PQerrorMessage(conn)) > 2)   {
-					printf( "%s\n", PQerrorMessage( conn ));
-				}
+				sprintf(statcmd, "SELECT CORR(cl1, cl2) FROM (SELECT cast(%s as double precision) AS cl1, cast(%s as double precision) AS cl2, ROW_NUMBER() OVER() as rnum FROM %s) as foo WHERE rnum > %d AND rnum < %d", 
+					colList[i], colList[j], table, c*sizeChunk, sizeChunk + c*sizeChunk);
 
-				corr = atof(PQgetvalue(result, 0, 0));
+				hdl = query(dbh, statcmd);
 
-				//printf("%f\n", corr);
+				mapi_fetch_row(hdl);
 
-				PQclear(result);
+				corr = atof(mapi_fetch_field(hdl, 0));
 
 				sprintf(inscmd, "INSERT INTO dc_%s (col0, col1) VALUES (%d, %f)", table, idChunkCombine((long long)(pow(2,i) + pow(2,j)), c, numChunks), corr);
 
-				if((result = PQexec( conn, inscmd )) == NULL){
-					printf("well that was null\n" );
-				}
-
-				if (PQresultStatus(result) != PGRES_TUPLES_OK && strlen(PQerrorMessage(conn)) > 2)
-			    {
-			        printf("INSERT failed: %s\n", PQerrorMessage(conn));
-			        PQclear(result);
-			        //exit(0);
-			    } else {
-			    	PQclear(result);
-			    }
+				update(dbh, inscmd);
 			}
 		}
 	}
-	PQfinish(conn);
+	mapi_close_handle(hdl);
+	mapi_disconnect(dbh);
 }
-
 int createDCTableLeveln(char* table, int levels, int numChunks, int numCols, int numRows){
 
-	PGconn * conn;
-	conn = PQconnectdb( "dbname=postgres" );
-	PGresult * result;
+	Mapi dbh;
+	dbh = mapi_connect("dhruv-VirtualBox", 50000,"monetdb", "monetdb", "sql", "test");
+	MapiHdl hdl = NULL;
 	
 	int c, x, y;
 
@@ -296,18 +285,17 @@ int createDCTableLeveln(char* table, int levels, int numChunks, int numCols, int
 
 				if((i >> x) & 1 == 1)
 					for(y = x+1; y < numCols; y++){
-						
+
 						if((i >> y) & 1 == 1){
 							sprintf(statcmd, "SELECT col1 FROM dc_%s WHERE col0 = %d", 
 								table, idChunkCombine((long long)(pow(2,x) + pow(2,y)), c, numChunks));
 
-							if(( result = PQexec( conn, statcmd )) == NULL && strlen(PQerrorMessage(conn)) > 2)   {
-								printf( "SELECT ERROR: %s\n", PQerrorMessage( conn ));
-							}
+							hdl = query(dbh, statcmd);
 							counter++;
 
-							vals[counter] = atof(PQgetvalue(result, 0, 0));
-							PQclear(result);
+							mapi_fetch_row(hdl);
+
+							vals[counter] = atof(mapi_fetch_field(hdl, 0));
 
 						}
 					}
@@ -317,24 +305,14 @@ int createDCTableLeveln(char* table, int levels, int numChunks, int numCols, int
 			counter = 0;
 
 			sprintf(inscmd, "INSERT INTO dc_%s (col0, col1) VALUES (%d, %f)", table, idChunkCombine(i, c, numChunks), correlation);
+				
+			update(dbh, inscmd);
 
-			if((result = PQexec( conn, inscmd )) == NULL){
-				printf("well that was null\n" );
-			}
-
-			if (PQresultStatus(result) != PGRES_TUPLES_OK && strlen(PQerrorMessage(conn)) > 2)
-		    {
-		        printf("INSERT failed: %s\n", PQerrorMessage(conn));
-		        PQclear(result);
-		        //exit(0);
-		    } else {
-		    	PQclear(result);
-		    }
 		}
 	}
-	PQfinish(conn);
+	mapi_close_handle(hdl);
+	mapi_disconnect(dbh);
 }
-
 int main( int argc, char* argv[]){
 
 	int numRows, numChunks, numCols;
@@ -354,24 +332,16 @@ int main( int argc, char* argv[]){
 		printf("%s\n", argv[x]);
 	}
 
-	PGconn * connection;
-
-	PGresult * result;
-
-	PQprintOpt options = {0};
-
-	options.header    = 1;
-	options.align     = 1;
-	options.fieldSep  = "|";
-
-	connection = PQconnectdb( "dbname=postgres" );
-
-	//PQprint(stdout, result, &options);
-
-	//createTable(connection, "banana", 5, true, true);
+	/*
+	Mapi dbh;
 	
-	PQfinish( connection );
+	dbh = mapi_connect("dhruv-VirtualBox", 50000,"monetdb", "monetdb", "sql", "test");
+
+	createTable(dbh, "bananatest", 5, true, true);
 	
+	mapi_disconnect(dbh);
+	*/
+
 	clock_t start = clock(), diff;
 
 	createDCTableSetup("banana", numCols, numChunks, numCols, numRows);
@@ -387,7 +357,6 @@ int main( int argc, char* argv[]){
 
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
 	printf("CPU Time taken %d seconds %d milliseconds\n", msec/1000, msec%1000);
-
 
 	return 0;
 }
