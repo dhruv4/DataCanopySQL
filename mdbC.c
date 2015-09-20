@@ -316,18 +316,26 @@ int main( int argc, char* argv[]){
 	//rewrite to fit experiments
 	//ARGS: setup exp numLevels numChunks numCols numRows
 
-	int numRows, numChunks, numCols;
+	int numLevels, numRows, numChunks, numCols;
+	char tableName[256], command[256];
 
 	if(argc > 1){
-		numRows = atoi(argv[1]);
-		numChunks = atoi(argv[2]);
-		numCols = atoi(argv[3]);
+		strcpy(command, argv[1]);
+		strcpy(tableName, argv[2]);
+		numLevels = atoi(argv[3]);
+		numRows = atoi(argv[4]);
+		numChunks = atoi(argv[5]);
+		numCols = atoi(argv[6]);
 	} else {
-		numRows = 10000;
+		strcpy(command, "all");
+		strcpy(tableName, "banana");
+		numRows = 1000;
 		numChunks = 10;
 		numCols = 10;
-	}
+		numLevels = numCols;
 
+	}
+	/*
 	int x;
 	for(x = 0; x < argc; x++){
 		printf("%s\n", argv[x]);
@@ -339,22 +347,25 @@ int main( int argc, char* argv[]){
     curtime=tv.tv_sec;
 
 	clock_t start = clock(), diff;
+	*/
 
-	createDCTableSetup("banana", numCols, numChunks, numCols, numRows);
-	printf("table created\n");
-	createDCTableLevel1("banana", numCols, numChunks, numCols, numRows);
-	printf("level1 created\n");
-	createDCTableLevel2("banana", numCols, numChunks, numCols, numRows);
-	printf("level2 created\n");
-	createDCTableLeveln("banana", numCols, numChunks, numCols, numRows);
-	printf("leveln created\n");
-
+	if(command == "setup" || command == "all")
+		createDCTableSetup(tableName, numCols, numChunks, numCols, numRows);
+	if(command == "level1" || command == "all")
+		createDCTableLevel1(tableName, numCols, numChunks, numCols, numRows);
+	if(command == "level2" || command == "all")
+		createDCTableLevel2(tableName, numCols, numChunks, numCols, numRows);
+	if(command == "leveln" || command == "all")
+		createDCTableLeveln(tableName, numCols, numChunks, numCols, numRows);
+	
+	/*
 	diff = clock() - start;
 
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
 	printf("CPU Time taken %d seconds %d milliseconds\n", msec/1000, msec%1000);
 	gettimeofday(&tv, NULL);
 	printf("Elapsed Time %ld seconds\n", tv.tv_sec - curtime);
+	*/
 
 	return 0;
 }
