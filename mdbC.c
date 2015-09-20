@@ -122,7 +122,7 @@ int idChunkCombine(long long idn, int chunk, int numChunks){
 void createDCTableSetup(char* table, int levels, int numChunks, int numCols, int numRows){
 	
 	Mapi dbh;
-	dbh = mapi_connect("dhruv-VirtualBox", 50000,"monetdb", "monetdb", "sql", "test");
+	dbh = mapi_connect("adama", 50000,"monetdb", "monetdb", "sql", "test");
 
 	char dc[255];
 
@@ -141,7 +141,7 @@ void createDCTableSetup(char* table, int levels, int numChunks, int numCols, int
 int createDCTableLevel1(char* table, int levels, int numChunks, int numCols, int numRows){
 
 	Mapi dbh;
-	dbh = mapi_connect("dhruv-VirtualBox", 50000,"monetdb", "monetdb", "sql", "test");
+	dbh = mapi_connect("adama", 50000,"monetdb", "monetdb", "sql", "test");
 	MapiHdl hdl = NULL;
 
 	char colcmd[255];
@@ -203,7 +203,7 @@ int createDCTableLevel1(char* table, int levels, int numChunks, int numCols, int
 int createDCTableLevel2(char* table, int levels, int numChunks, int numCols, int numRows){
 	
 	Mapi dbh;
-	dbh = mapi_connect("dhruv-VirtualBox", 50000,"monetdb", "monetdb", "sql", "test");
+	dbh = mapi_connect("adama", 50000,"monetdb", "monetdb", "sql", "test");
 	MapiHdl hdl = NULL;
 
 	char colcmd[255];
@@ -253,7 +253,7 @@ int createDCTableLevel2(char* table, int levels, int numChunks, int numCols, int
 int createDCTableLeveln(char* table, int levels, int numChunks, int numCols, int numRows){
 
 	Mapi dbh;
-	dbh = mapi_connect("dhruv-VirtualBox", 50000,"monetdb", "monetdb", "sql", "test");
+	dbh = mapi_connect("adama", 50000,"monetdb", "monetdb", "sql", "test");
 	MapiHdl hdl = NULL;
 	
 	int c, x, y;
