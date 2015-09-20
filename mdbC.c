@@ -350,13 +350,13 @@ int main( int argc, char* argv[]){
 	clock_t start = clock(), diff;
 	*/
 
-	if(strcmp(command, "setup") == 1 || strcmp(command, "all") == 1)
+	if(strcmp(command, "setup") == 0 || strcmp(command, "all") == 0)
 		createDCTableSetup(tableName, numCols, numChunks, numCols, numRows);
-	if(strcmp(command, "level1") == 1 || strcmp(command, "all") == 1)
+	if(strcmp(command, "level1") == 0 || strcmp(command, "all") == 0)
 		createDCTableLevel1(tableName, numCols, numChunks, numCols, numRows);
-	if(strcmp(command, "level2") == 1 || strcmp(command, "all") == 1)
+	if(strcmp(command, "level2") == 0 || strcmp(command, "all") == 0)
 		createDCTableLevel2(tableName, numCols, numChunks, numCols, numRows);
-	if(strcmp(command, "leveln") == 1 || strcmp(command, "all") == 1)
+	if(strcmp(command, "leveln") == 0 || strcmp(command, "all") == 0)
 		createDCTableLeveln(tableName, numCols, numChunks, numCols, numRows);
 	
 	/*
