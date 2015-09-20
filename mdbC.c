@@ -313,8 +313,9 @@ int createDCTableLeveln(char* table, int levels, int numChunks, int numCols, int
 }
 int main( int argc, char* argv[]){
 
-	//rewrite to fit experiments
-	//ARGS: setup exp numLevels numChunks numCols numRows
+	/***********************************************************
+	MAKE SURE TO CHECK IF MAPI IS SET TO adama OR dhruv-VirtualBox AS NEEDED
+	************************************************************/
 
 	int numLevels, numRows, numChunks, numCols;
 	char tableName[256], command[256];
