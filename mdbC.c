@@ -335,7 +335,6 @@ int main( int argc, char* argv[]){
 		numLevels = numCols;
 
 	}
-	printf("%s\n", command);
 	/*
 	int x;
 	for(x = 0; x < argc; x++){
