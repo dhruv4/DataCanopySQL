@@ -232,8 +232,6 @@ int createDCTableLevel2(char* table, int levels, int numChunks, int numCols, int
 		for(i = 0; i < numCols - 1; i++){
 			for(j = i+1; j < numCols; j++){
 
-				//CAST TO DOUBLE PRECISION INSTEAD OF BIGINT???? NEED BIGGER THAN DOUBLE??
-
 				sprintf(statcmd, "SELECT CORR(cl1, cl2) FROM (SELECT cast(%s as double precision) AS cl1, cast(%s as double precision) AS cl2, ROW_NUMBER() OVER() as rnum FROM %s) as foo WHERE rnum > %d AND rnum < %d", 
 					colList[i], colList[j], table, c*sizeChunk, sizeChunk + c*sizeChunk);
 
@@ -315,6 +313,9 @@ int createDCTableLeveln(char* table, int levels, int numChunks, int numCols, int
 }
 int main( int argc, char* argv[]){
 
+	//rewrite to fit experiments
+	//ARGS: setup exp numLevels numChunks numCols numRows
+
 	int numRows, numChunks, numCols;
 
 	if(argc > 1){
@@ -332,15 +333,10 @@ int main( int argc, char* argv[]){
 		printf("%s\n", argv[x]);
 	}
 
-	/*
-	Mapi dbh;
-	
-	dbh = mapi_connect("dhruv-VirtualBox", 50000,"monetdb", "monetdb", "sql", "test");
-
-	createTable(dbh, "bananatest", 5, true, true);
-	
-	mapi_disconnect(dbh);
-	*/
+	time_t curtime;
+    struct timeval tv;
+    gettimeofday(&tv, NULL); 
+    curtime=tv.tv_sec;
 
 	clock_t start = clock(), diff;
 
@@ -357,6 +353,8 @@ int main( int argc, char* argv[]){
 
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
 	printf("CPU Time taken %d seconds %d milliseconds\n", msec/1000, msec%1000);
+	gettimeofday(&tv, NULL);
+	printf("Elapsed Time %ld seconds\n", tv.tv_sec - curtime);
 
 	return 0;
 }

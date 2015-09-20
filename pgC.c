@@ -296,7 +296,7 @@ int createDCTableLeveln(char* table, int levels, int numChunks, int numCols, int
 
 				if((i >> x) & 1 == 1)
 					for(y = x+1; y < numCols; y++){
-						
+
 						if((i >> y) & 1 == 1){
 							sprintf(statcmd, "SELECT col1 FROM dc_%s WHERE col0 = %d", 
 								table, idChunkCombine((long long)(pow(2,x) + pow(2,y)), c, numChunks));
@@ -337,41 +337,39 @@ int createDCTableLeveln(char* table, int levels, int numChunks, int numCols, int
 
 int main( int argc, char* argv[]){
 
-	int numRows, numChunks, numCols;
+	//rewrite to work with experiments
+	//ARGS: setup exp numLevels numChunks numCols numRows
+
+	int numLevels, numRows, numChunks, numCols;
+	char tableName[256], command[256];
 
 	if(argc > 1){
-		numRows = atoi(argv[1]);
-		numChunks = atoi(argv[2]);
-		numCols = atoi(argv[3]);
+		command = argv[1];
+		tableName = argv[2];
+		numLevels = atoi(argv[3]);
+		numRows = atoi(argv[4]);
+		numChunks = atoi(argv[5]);
+		numCols = atoi(argv[6]);
 	} else {
-		numRows = 10000;
-		numChunks = 10;
+		command = "all";
+		tableName = "banana";
+		numRows = 1000;
+		numChunks = 10
 		numCols = 10;
+		numLevels = numCols;
+
 	}
 
 	int x;
 	for(x = 0; x < argc; x++){
 		printf("%s\n", argv[x]);
 	}
-
-	PGconn * connection;
-
-	PGresult * result;
-
-	PQprintOpt options = {0};
-
-	options.header    = 1;
-	options.align     = 1;
-	options.fieldSep  = "|";
-
-	connection = PQconnectdb( "dbname=postgres" );
-
-	//PQprint(stdout, result, &options);
-
-	//createTable(connection, "banana", 5, true, true);
 	
-	PQfinish( connection );
-	
+	time_t curtime;
+    struct timeval tv;
+    gettimeofday(&tv, NULL); 
+    curtime=tv.tv_sec;
+
 	clock_t start = clock(), diff;
 
 	createDCTableSetup("banana", numCols, numChunks, numCols, numRows);
@@ -387,7 +385,8 @@ int main( int argc, char* argv[]){
 
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
 	printf("CPU Time taken %d seconds %d milliseconds\n", msec/1000, msec%1000);
-
+	gettimeofday(&tv, NULL);
+	printf("Elapsed Time %ld seconds\n", tv.tv_sec - curtime);
 
 	return 0;
 }
